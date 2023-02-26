@@ -29,7 +29,8 @@ Sound fxCoin = { 0 };
 //----------------------------------------------------------------------------------
 // Local Variables Definition (local to this module)
 //----------------------------------------------------------------------------------
-RenderTexture2D nokiaScreen;
+static RenderTexture2D nokiaScreen;
+static bool pixelSeparation = false;
 static const int screenWidth = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_W;
 static const int screenHeight = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_H;
 
@@ -232,6 +233,10 @@ static void UpdateDrawFrame(void)
 
     if (!onTransition)
     {
+        // Toggle pixel separation
+        if (IsKeyPressed(KEY_P))
+            pixelSeparation = !pixelSeparation;
+
         switch(currentScreen)
         {
             case LOGO:
@@ -304,6 +309,19 @@ static void UpdateDrawFrame(void)
         DrawTexturePro(nokiaScreen.texture, (Rectangle){0, 0, SCREEN_W, -SCREEN_H},
                 (Rectangle){SCREEN_BORDER, SCREEN_BORDER, SCREEN_SCALE_MULT*SCREEN_W, SCREEN_SCALE_MULT*SCREEN_H},
                 (Vector2){0, 0}, 0, WHITE);
+
+        if (pixelSeparation)
+        {
+            for (int y = 0; y <= SCREEN_H; ++y)
+                DrawLine(SCREEN_BORDER, SCREEN_BORDER + y*SCREEN_SCALE_MULT,
+                        SCREEN_BORDER + SCREEN_W*SCREEN_SCALE_MULT, SCREEN_BORDER + y*SCREEN_SCALE_MULT,
+                        SCREEN_COLOR_BG);
+
+            for (int x = 0; x <= SCREEN_W; ++x)
+                DrawLine(SCREEN_BORDER + x*SCREEN_SCALE_MULT, SCREEN_BORDER,
+                        SCREEN_BORDER + x*SCREEN_SCALE_MULT, SCREEN_BORDER + SCREEN_H*SCREEN_SCALE_MULT,
+                        SCREEN_COLOR_BG);
+        }
 
         DrawFPS(10, 10);
     EndDrawing();
