@@ -421,7 +421,7 @@ void DrawGameplayScreen(void)
         }
 
         // Draw Carrot
-        DrawBorderedCube((Vector3){level->carrot_pos.x , 0.3, level->carrot_pos.z}, 0.2, 0.2, 0.2);
+        DrawCube((Vector3){level->carrot_pos.x , 0.3, level->carrot_pos.z}, 0.2, 0.2, 0.2, SCREEN_COLOR_LIT);
 
     EndMode3D();
 
