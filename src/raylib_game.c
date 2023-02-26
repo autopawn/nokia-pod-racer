@@ -25,6 +25,8 @@ GameScreen currentScreen = LOGO;
 Font font = { 0 };
 Music music = { 0 };
 Sound fxCoin = { 0 };
+int lastGameTime = { 0 };
+bool lastGameComplete = { 0 };
 
 //----------------------------------------------------------------------------------
 // Local Variables Definition (local to this module)

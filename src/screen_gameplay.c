@@ -78,6 +78,8 @@ typedef struct
     int n_carrots;
     Vector3 carrot_pos;
     int carrot_grab_anim;
+
+    int time_playing;
 } Level;
 
 //----------------------------------------------------------------------------------
@@ -209,6 +211,8 @@ static void UpdatePlayer(Level *level, Player *player)
     {
         player->pos.y = 0;
         player->pos_spd.y = 0;
+        if (level->time_playing == 0)
+            level->time_playing = 1;
     }
 
     // Mario Kart 64 collision
@@ -359,6 +363,12 @@ void UpdateGameplayScreen(void)
         PauseMusicStream(music);
     }
 
+    // Increment the clock
+    if (level->time_playing && level->n_carrots < TARGET_N_CARROTS)
+    {
+        level->time_playing++;
+    }
+
     if (level->carrot_grab_anim > PLAYER_CARROT_GRAB_ANIMATION_TIME)
     {
         if (level->n_carrots >= TARGET_N_CARROTS)
@@ -473,10 +483,15 @@ void DrawGameplayScreen(void)
         }
         else
         {
+            // Time counter
+            int seconds = level->time_playing / 60;
+            sprintf(buffer, "%02d:%02d", seconds/60, seconds%60);
+            DrawTextOutline(0, 0, buffer);
+
             // Distance to carrot
             sprintf(buffer, "%dm", (int) roundf(CarrotDistance(level, &player)));
             int w = MeasureText(buffer, UI_FONT_SIZE);
-            DrawTextOutline(SCREEN_W/2 - w/2, 0, buffer);
+            DrawTextOutline(SCREEN_W - w, 0, buffer);
         }
     }
     else
@@ -506,5 +521,10 @@ void UnloadGameplayScreen(void)
 // Gameplay Screen should finish?
 int FinishGameplayScreen(void)
 {
+    if (finishScreen)
+    {
+        lastGameTime = level->time_playing/60;
+        lastGameComplete = (finishScreen == 2);
+    }
     return finishScreen;
 }
