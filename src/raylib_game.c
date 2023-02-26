@@ -34,7 +34,8 @@ static const int screenWidth = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_W;
 static const int screenHeight = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_H;
 
 // Required variables to manage screen transitions (fade-in, fade-out)
-static float transAlpha = 0.0f;
+static int transAlpha = 0;
+static int transLength = 8;
 static bool onTransition = false;
 static bool transFadeOut = false;
 static int transFromScreen = -1;
@@ -151,7 +152,7 @@ static void TransitionToScreen(GameScreen screen)
     transFadeOut = false;
     transFromScreen = currentScreen;
     transToScreen = screen;
-    transAlpha = 0.0f;
+    transAlpha = 0;
 }
 
 // Update transition effect (fade-in, fade-out)
@@ -159,13 +160,11 @@ static void UpdateTransition(void)
 {
     if (!transFadeOut)
     {
-        transAlpha += 0.05f;
+        transAlpha += 1;
 
-        // NOTE: Due to float internal representation, condition jumps on 1.0f instead of 1.05f
-        // For that reason we compare against 1.01f, to avoid last frame loading stop
-        if (transAlpha > 1.01f)
+        if (transAlpha > transLength)
         {
-            transAlpha = 1.0f;
+            transAlpha = transLength;
 
             // Unload current screen
             switch (transFromScreen)
@@ -196,11 +195,11 @@ static void UpdateTransition(void)
     }
     else  // Transition fade out logic
     {
-        transAlpha -= 0.02f;
+        transAlpha -= 1;
 
-        if (transAlpha < -0.01f)
+        if (transAlpha < 0)
         {
-            transAlpha = 0.0f;
+            transAlpha = 0;
             transFadeOut = false;
             onTransition = false;
             transFromScreen = -1;
@@ -212,7 +211,16 @@ static void UpdateTransition(void)
 // Draw transition effect (full-screen rectangle)
 static void DrawTransition(void)
 {
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, transAlpha));
+    for (int x = 0; x < SCREEN_W; ++x)
+    {
+        for (int y = 0; y < SCREEN_W; ++y)
+        {
+            int pixel_order = (int[]){2, 0, 1, 3}[2 * (y % 2) + (x % 2)];
+
+            if (transLength * pixel_order < 4 * transAlpha)
+                DrawPixel(x, y, SCREEN_COLOR_LIT);
+        }
+    }
 }
 
 // Update and draw game frame
@@ -230,7 +238,7 @@ static void UpdateDrawFrame(void)
             {
                 UpdateLogoScreen();
 
-                if (FinishLogoScreen()) TransitionToScreen(TITLE);
+                if (FinishLogoScreen()) TransitionToScreen(GAMEPLAY);
 
             } break;
             case TITLE:
