@@ -24,9 +24,12 @@
 **********************************************************************************************/
 
 #include "raylib.h"
+#include "raymath.h"
 #include "screens.h"
 
+#include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -38,11 +41,45 @@ static Texture2D textureDriver;
 
 typedef struct
 {
-    float x, y;
+    float ang, ang_spd;
+
+    Vector3 pos, pos_spd;
+
     int turbo_l, turbo_r;
 } Player;
 
 static Player player;
+
+static float absf(float a)
+{
+    return a < 0 ? -a : a;
+}
+
+static void UpdatePlayer(Player *player)
+{
+    // Target velocity
+    float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
+    float tgt_front_spd = (player->turbo_l + player->turbo_r - 0.4*absf(player->turbo_r - player->turbo_l)) * 0.1;
+    Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -10, -tgt_front_spd*sinf(player->ang)};
+
+    // Accelerate towards target velocity (not phyisically accurate at all)
+    player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
+    player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
+
+    // Move according to speed
+    player->ang += player->ang_spd;
+    player->pos = Vector3Add(player->pos, player->pos_spd);
+
+    if (player->pos.y < 0)
+    {
+        player->pos.y = 0;
+        player->pos_spd.y = 0;
+    }
+
+    printf("player->pos %.3f %.3f %.3f\n", player->pos.x, player->pos.y, player->pos.z);
+    printf("player->ang %.3f \n", player->ang);
+}
+
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
 //----------------------------------------------------------------------------------
@@ -83,6 +120,8 @@ void UpdateGameplayScreen(void)
     else
         player.turbo_r = 0;
 
+    UpdatePlayer(&player);
+
     // // Press enter or tap to change to ENDING screen
     // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
     // {
@@ -91,12 +130,47 @@ void UpdateGameplayScreen(void)
     // }
 }
 
+static void DrawBorderedCube(Vector3 position, float width, float height, float length)
+{
+    DrawCube(position, width, height, length, SCREEN_COLOR_BG);
+
+    BoundingBox box;
+    box.min.x = position.x - 0.5*width - 0.02;
+    box.max.x = position.x + 0.5*width + 0.02;
+    box.min.y = position.y - 0.5*height - 0.02;
+    box.max.y = position.y + 0.5*height + 0.02;
+    box.min.z = position.z - 0.5*length - 0.02;
+    box.max.z = position.z + 0.5*length + 0.02;
+
+    DrawBoundingBox(box, SCREEN_COLOR_LIT);
+}
+
 // Gameplay Screen Draw logic
 void DrawGameplayScreen(void)
 {
-    DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 36);
-    DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 36);
-    DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 36);
+    const float camera_y = 0.8;
+    const float camera_d = 3.0;
+    const float camera_behind = 1.0;
+
+    Vector3 player_pointing = Vector3RotateByAxisAngle((Vector3){1,0,0}, (Vector3){0,1,0}, player.ang);
+
+    Camera camera = { 0 };
+    camera.position = Vector3Subtract(Vector3Add(player.pos, (Vector3){0, camera_y, 0}), Vector3Scale(player_pointing, camera_behind));
+    camera.target = Vector3Add(player.pos, Vector3Scale(player_pointing, camera_d));
+    camera.up = (Vector3){0, 1, 0};
+    camera.fovy = 45.0f;
+    camera.projection = CAMERA_PERSPECTIVE;
+
+    DrawLine(0, 12, SCREEN_W, 12, SCREEN_COLOR_LIT);
+
+    BeginMode3D(camera);
+        DrawBorderedCube((Vector3){10, 0.5, 0}, 1, 1, 1);
+
+    EndMode3D();
+
+    DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
+    DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
+    DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 34);
 }
 
 // Gameplay Screen Unload logic

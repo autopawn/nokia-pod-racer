@@ -323,7 +323,7 @@ static void UpdateDrawFrame(void)
                         SCREEN_COLOR_BG);
         }
 
-        DrawFPS(10, 10);
+        DrawFPS(1, 1);
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
