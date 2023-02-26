@@ -33,8 +33,9 @@
 #include <string.h>
 #include <math.h>
 
-const int MAP_SIZE = 1000;
-const int N_MAP_OBSTACLES = 4000;
+static const int MAP_SIZE = 1000;
+static const int N_MAP_OBSTACLES = 4000;
+static const int PLAYER_DEATH_ANIMATION_TIME = 200;
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -52,6 +53,8 @@ typedef struct
     Vector3 pos, pos_spd;
 
     int turbo_l, turbo_r;
+
+    int time_death;
 } Player;
 
 typedef struct
@@ -129,14 +132,38 @@ static void UpdatePlayer(Level *level, Player *player)
 {
     const float PLAYER_RAD = 0.3;
 
-    // Target velocity
-    float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
-    float tgt_front_spd = (player->turbo_l + player->turbo_r - 0.4*absf(player->turbo_r - player->turbo_l)) * 0.1;
-    Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -10, -tgt_front_spd*sinf(player->ang)};
+    if (!player->time_death)
+    {
+        // React to controls
+        if (IsKeyDown(KEY_A))
+            player->turbo_l = 2;
+        else if (IsKeyDown(KEY_Z))
+            player->turbo_l = 1;
+        else
+            player->turbo_l = 0;
 
-    // Accelerate towards target velocity (not phyisically accurate at all)
-    player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
-    player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
+        if (IsKeyDown(KEY_K))
+            player->turbo_r = 2;
+        else if (IsKeyDown(KEY_M))
+            player->turbo_r = 1;
+        else
+            player->turbo_r = 0;
+
+        // Target velocity
+        float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
+        float tgt_front_spd = (player->turbo_l + player->turbo_r - 0.4*absf(player->turbo_r - player->turbo_l)) * 0.1;
+        Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -10, -tgt_front_spd*sinf(player->ang)};
+
+        // Accelerate towards target velocity (not phyisically accurate at all)
+        player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
+        player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
+    }
+    else
+    {
+        player->time_death++;
+        player->pos_spd = Vector3Scale(player->pos_spd, 0.95);
+        player->ang_spd *= 0.95;
+    }
 
     // Collide with floor
     if (player->pos.y + player->pos_spd.y < 0)
@@ -179,7 +206,9 @@ static void UpdatePlayer(Level *level, Player *player)
 
         // Is collision fatal?
         float collision_magnitude = Vector3Distance(player->pos_spd, old_pos_spd);
-        printf("Collision! %.3f\n", collision_magnitude);
+
+        if (collision_magnitude > 0.15)
+            player->time_death += 1;
     }
 
     // Move according to speed
@@ -226,21 +255,10 @@ void InitGameplayScreen(void)
 // Gameplay Screen Update logic
 void UpdateGameplayScreen(void)
 {
-    if (IsKeyDown(KEY_A))
-        player.turbo_l = 2;
-    else if (IsKeyDown(KEY_Z))
-        player.turbo_l = 1;
-    else
-        player.turbo_l = 0;
-
-    if (IsKeyDown(KEY_K))
-        player.turbo_r = 2;
-    else if (IsKeyDown(KEY_M))
-        player.turbo_r = 1;
-    else
-        player.turbo_r = 0;
-
     UpdatePlayer(level, &player);
+
+    if (player.time_death >= PLAYER_DEATH_ANIMATION_TIME)
+        finishScreen = 1;
 
     // // Press enter or tap to change to ENDING screen
     // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
@@ -297,9 +315,20 @@ void DrawGameplayScreen(void)
 
     EndMode3D();
 
-    DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
-    DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
-    DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 34);
+    if (!player.time_death)
+    {
+        DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
+        DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
+        DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 34);
+    }
+    else
+    {
+        int anim = player.time_death * 12 / PLAYER_DEATH_ANIMATION_TIME;
+
+        DrawTile(textureDriver, 12, 12, anim, 4, 36, 34);
+        DrawTile(textureDriver, 12, 12, 3, 3, 36 - 10, 34);
+        DrawTile(textureDriver, 12, 12, 4, 3, 36 + 10, 34);
+    }
 }
 
 // Gameplay Screen Unload logic
