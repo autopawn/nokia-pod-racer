@@ -88,6 +88,11 @@ static inline float absf(float a)
     return a < 0 ? -a : a;
 }
 
+static inline float maxf(float a, float b)
+{
+    return a > b ? a : b;
+}
+
 #ifdef __cplusplus
 }
 #endif

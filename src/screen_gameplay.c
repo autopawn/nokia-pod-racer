@@ -57,7 +57,7 @@ typedef struct
 typedef struct
 {
     bool type;
-    Vector2 pos;
+    Vector3 pos;
 } Obstacle;
 
 typedef struct
@@ -70,24 +70,50 @@ typedef struct
 // Gameplay Screen Functions Definition
 //----------------------------------------------------------------------------------
 
+static bool LevelCheckCollision(const Level *level, Vector3 point, float rad)
+{
+    for (int i = 0; i < level->objs_count; ++i)
+    {
+        if (point.x + rad <= level->objs[i].pos.x - 0.5)
+            continue;
+        if (point.x - rad >= level->objs[i].pos.x + 0.5)
+            continue;
+        if (point.z + rad <= level->objs[i].pos.z - 0.5)
+            continue;
+        if (point.z - rad >= level->objs[i].pos.z + 0.5)
+            continue;
+
+        return true;
+    }
+    return false;
+}
+
 static Level *LevelGenerate()
 {
     Level *level = MemAlloc(sizeof(*level));
     assert(level);
 
     level->objs = MemAlloc(sizeof(*level->objs) * N_MAP_OBSTACLES);
-    level->objs_count = N_MAP_OBSTACLES;
+    level->objs_count = 0;
 
-    for (int i = 0; i < level->objs_count; ++i)
+    for (int i = 0; i < N_MAP_OBSTACLES; ++i)
     {
-        int pos_x = rand()%MAP_SIZE;
-        int pos_y = rand()%MAP_SIZE;
-
         Obstacle obs = {0};
-        obs.pos.x = pos_x;
-        obs.pos.y = pos_y;
 
-        level->objs[i] = obs;
+        while (1)
+        {
+            int pos_x = rand()%MAP_SIZE;
+            int pos_z = rand()%MAP_SIZE;
+
+            obs.pos.x = pos_x;
+            obs.pos.y = 0;
+            obs.pos.z = pos_z;
+
+            if (!LevelCheckCollision(level, obs.pos, 0.2))
+                break;
+        }
+
+        level->objs[level->objs_count++] = obs;
     }
 
     return level;
@@ -99,8 +125,10 @@ static void UnloadLevel(Level *level)
     MemFree(level);
 }
 
-static void UpdatePlayer(Player *player)
+static void UpdatePlayer(Level *level, Player *player)
 {
+    const float PLAYER_RAD = 0.3;
+
     // Target velocity
     float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
     float tgt_front_spd = (player->turbo_l + player->turbo_r - 0.4*absf(player->turbo_r - player->turbo_l)) * 0.1;
@@ -110,15 +138,53 @@ static void UpdatePlayer(Player *player)
     player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
     player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
 
-    // Move according to speed
-    player->ang += player->ang_spd;
-    player->pos = Vector3Add(player->pos, player->pos_spd);
-
-    if (player->pos.y < 0)
+    // Collide with floor
+    if (player->pos.y + player->pos_spd.y < 0)
     {
         player->pos.y = 0;
         player->pos_spd.y = 0;
     }
+
+    // Mario Kart 64 collision
+    Vector3 pos_spd_x = (Vector3){player->pos_spd.x, 0, 0};
+    Vector3 pos_spd_z = (Vector3){0, 0, player->pos_spd.z};
+
+    Vector3 old_pos_spd = player->pos_spd;
+
+    if (LevelCheckCollision(level, Vector3Add(player->pos, player->pos_spd), PLAYER_RAD))
+    {
+
+        // Remove one speed component
+        if (absf(player->pos_spd.x) >= absf(player->pos_spd.y))
+        {
+            if (LevelCheckCollision(level, Vector3Add(player->pos, pos_spd_x), PLAYER_RAD))
+                player->pos_spd.x = 0;
+            else if (LevelCheckCollision(level, Vector3Add(player->pos, pos_spd_z), PLAYER_RAD))
+                player->pos_spd.z = 0;
+        }
+        else
+        {
+            if (LevelCheckCollision(level, Vector3Add(player->pos, pos_spd_z), PLAYER_RAD))
+                player->pos_spd.z = 0;
+            else if (LevelCheckCollision(level, Vector3Add(player->pos, pos_spd_x), PLAYER_RAD))
+                player->pos_spd.x = 0;
+        }
+
+        // Halt
+        if (LevelCheckCollision(level, Vector3Add(player->pos, player->pos_spd), PLAYER_RAD))
+        {
+            player->pos_spd.x = 0;
+            player->pos_spd.z = 0;
+        }
+
+        // Is collision fatal?
+        float collision_magnitude = Vector3Distance(player->pos_spd, old_pos_spd);
+        printf("Collision! %.3f\n", collision_magnitude);
+    }
+
+    // Move according to speed
+    player->ang += player->ang_spd;
+    player->pos = Vector3Add(player->pos, player->pos_spd);
 }
 
 static void DrawTile(Texture2D tex, int tile_size_x, int tile_size_y, int tile_x, int tile_y,
@@ -174,7 +240,7 @@ void UpdateGameplayScreen(void)
     else
         player.turbo_r = 0;
 
-    UpdatePlayer(&player);
+    UpdatePlayer(level, &player);
 
     // // Press enter or tap to change to ENDING screen
     // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
@@ -226,7 +292,7 @@ void DrawGameplayScreen(void)
 
         for (int i = 0; i < level->objs_count; ++i)
         {
-            DrawBorderedCube((Vector3){level->objs[i].pos.x , 1, level->objs[i].pos.y}, 1, 2, 1);
+            DrawBorderedCube((Vector3){level->objs[i].pos.x , 1, level->objs[i].pos.z}, 1, 2, 1);
         }
 
     EndMode3D();
