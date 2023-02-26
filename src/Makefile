@@ -202,6 +202,7 @@ else
         else
             CFLAGS += -Os
         endif
+		CFLAGS += -s MINIFY_HTML=0
     else
         CFLAGS += -s -O2
     endif
