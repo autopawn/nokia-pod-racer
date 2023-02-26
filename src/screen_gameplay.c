@@ -36,6 +36,8 @@
 static const int MAP_SIZE = 1000;
 static const int N_MAP_OBSTACLES = 4000;
 static const int PLAYER_DEATH_ANIMATION_TIME = 200;
+static const float CARROT_SPAN_DIST = 300;
+static const int UI_FONT_SIZE = 8;
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -69,6 +71,8 @@ typedef struct
 {
     Obstacle *objs;
     unsigned int objs_count;
+
+    Vector3 carrot_pos;
 } Level;
 
 //----------------------------------------------------------------------------------
@@ -91,6 +95,27 @@ static bool LevelCheckCollision(const Level *level, Vector3 point, float rad)
         return true;
     }
     return false;
+}
+
+static void LevelRespawnCarrot(Level *level, const Player *player)
+{
+    assert(CARROT_SPAN_DIST < 0.9 * MAP_SIZE);
+
+    while(1)
+    {
+        float angle = 2*PI*(rand() % 30000)/30000.0f;
+
+        float pos_x = player->pos.x + CARROT_SPAN_DIST * cosf(angle);
+        float pos_z = player->pos.z + CARROT_SPAN_DIST * sinf(angle);
+
+        if (0 < pos_x && pos_x < MAP_SIZE && 0 < pos_z && pos_z < MAP_SIZE)
+        {
+            level->carrot_pos = (Vector3){pos_x, 0, pos_z};
+
+            if (!LevelCheckCollision(level, level->carrot_pos, 2))
+                break;
+        }
+    }
 }
 
 static Level *LevelGenerate()
@@ -223,6 +248,7 @@ static void UpdatePlayer(Level *level, Player *player)
 
     // Move according to speed
     player->ang += player->ang_spd;
+    player->ang = fmodf(player->ang, 2*PI);
     player->pos = Vector3Add(player->pos, player->pos_spd);
 }
 
@@ -234,6 +260,19 @@ static void DrawTile(Texture2D tex, int tile_size_x, int tile_size_y, int tile_x
     DrawTextureRec(tex, src, (Vector2){pos_x, pos_y}, WHITE);
 }
 
+static void DrawTextOutline(int pos_x, int pos_y, const char *text)
+{
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            if (x == 0 && y == 0)
+                continue;
+            DrawText(text, pos_x - x, pos_y - y, UI_FONT_SIZE, SCREEN_COLOR_LIT);
+        }
+    }
+    DrawText(text, pos_x, pos_y, UI_FONT_SIZE, SCREEN_COLOR_BG);
+}
 
 //----------------------------------------------------------------------------------
 // Local variables only for Gameplay Screen Functions
@@ -261,6 +300,8 @@ void InitGameplayScreen(void)
     player.pos.z = MAP_SIZE/2.0;
     player.pos.y = 200;
 
+    LevelRespawnCarrot(level, &player);
+
     fxBreak = LoadSound("resources/break.mp3");
 
     PlayMusicStream(music);
@@ -283,6 +324,26 @@ void UpdateGameplayScreen(void)
     //     finishScreen = 1;
     //     PlaySound(fxCoin);
     // }
+}
+
+float CarrotAngle(const Level *level, const Player *player)
+{
+    float angle = atan2f(- (level->carrot_pos.z - player->pos.z), level->carrot_pos.x - player->pos.x);
+
+    float delta = angle - player->ang;
+
+    if (delta < -PI)
+        return 2*PI + delta;
+
+    if (delta > PI)
+        return delta - 2*PI;
+
+    return delta;
+}
+
+float CarrotDistance(const Level *level, const Player *player)
+{
+    return Vector3Distance(player->pos, level->carrot_pos);
 }
 
 static void DrawBorderedCube(Vector3 position, float width, float height, float length)
@@ -330,6 +391,9 @@ void DrawGameplayScreen(void)
             DrawBorderedCube((Vector3){level->objs[i].pos.x , 1, level->objs[i].pos.z}, 1, 2, 1);
         }
 
+        // Draw Carrot
+        DrawBorderedCube((Vector3){level->carrot_pos.x , 0.3, level->carrot_pos.z}, 0.2, 0.2, 0.2);
+
     EndMode3D();
 
     if (!player.time_death)
@@ -337,6 +401,34 @@ void DrawGameplayScreen(void)
         DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
         DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
         DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 34);
+
+        // Carrot seeker
+        float carrot_angle = CarrotAngle(level, &player);
+
+        const char *text;
+
+        text = "";
+        if (carrot_angle > 0.1)
+            text = "<";
+        if (carrot_angle > 0.2)
+            text = "<<";
+        if (carrot_angle > 0.4)
+            text = "<<<";
+        DrawTextOutline(1, 24, text);
+
+        text = "";
+        if (carrot_angle < -0.1)
+            text = ">";
+        if (carrot_angle < -0.2)
+            text = ">>";
+        if (carrot_angle < -0.4)
+            text = ">>>";
+        DrawTextOutline(SCREEN_W - 4 * strlen(text), 24, text);
+
+        char buffer[80];
+        sprintf(buffer, "%dm", (int) roundf(CarrotDistance(level, &player)));
+        int w = MeasureText(buffer, UI_FONT_SIZE);
+        DrawTextOutline(SCREEN_W/2 - w/2, 1, buffer);
     }
     else
     {

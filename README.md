@@ -58,3 +58,19 @@ This game sources are licensed under an unmodified zlib/libpng license, which is
 $(Additional Licenses)
 
 *Copyright (c) $(Year) $(User Name) ($(User Twitter/GitHub Name))*
+
+
+
+### Reminders to self
+
+Compile for Linux
+
+```
+make PLATFORM=PLATFORM_DESKTOP && ./raylib_game
+```
+
+Compile for Web
+
+```
+make PLATFORM=PLATFORM_WEB
+```
