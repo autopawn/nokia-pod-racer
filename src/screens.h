@@ -83,6 +83,10 @@ static inline int mod(int a, int b)
     return r < 0 ? r + b : r;
 }
 
+static inline float absf(float a)
+{
+    return a < 0 ? -a : a;
+}
 
 #ifdef __cplusplus
 }

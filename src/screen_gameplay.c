@@ -27,9 +27,14 @@
 #include "raymath.h"
 #include "screens.h"
 
+#include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
+const int MAP_SIZE = 1000;
+const int N_MAP_OBSTACLES = 4000;
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -49,11 +54,49 @@ typedef struct
     int turbo_l, turbo_r;
 } Player;
 
-static Player player;
-
-static float absf(float a)
+typedef struct
 {
-    return a < 0 ? -a : a;
+    bool type;
+    Vector2 pos;
+} Obstacle;
+
+typedef struct
+{
+    Obstacle *objs;
+    unsigned int objs_count;
+} Level;
+
+//----------------------------------------------------------------------------------
+// Gameplay Screen Functions Definition
+//----------------------------------------------------------------------------------
+
+static Level *LevelGenerate()
+{
+    Level *level = MemAlloc(sizeof(*level));
+    assert(level);
+
+    level->objs = MemAlloc(sizeof(*level->objs) * N_MAP_OBSTACLES);
+    level->objs_count = N_MAP_OBSTACLES;
+
+    for (int i = 0; i < level->objs_count; ++i)
+    {
+        int pos_x = rand()%MAP_SIZE;
+        int pos_y = rand()%MAP_SIZE;
+
+        Obstacle obs = {0};
+        obs.pos.x = pos_x;
+        obs.pos.y = pos_y;
+
+        level->objs[i] = obs;
+    }
+
+    return level;
+}
+
+static void UnloadLevel(Level *level)
+{
+    MemFree(level->objs);
+    MemFree(level);
 }
 
 static void UpdatePlayer(Player *player)
@@ -78,10 +121,6 @@ static void UpdatePlayer(Player *player)
     }
 }
 
-//----------------------------------------------------------------------------------
-// Gameplay Screen Functions Definition
-//----------------------------------------------------------------------------------
-
 static void DrawTile(Texture2D tex, int tile_size_x, int tile_size_y, int tile_x, int tile_y,
         int pos_x, int pos_y)
 {
@@ -89,6 +128,18 @@ static void DrawTile(Texture2D tex, int tile_size_x, int tile_size_y, int tile_x
 
     DrawTextureRec(tex, src, (Vector2){pos_x, pos_y}, WHITE);
 }
+
+
+//----------------------------------------------------------------------------------
+// Local variables only for Gameplay Screen Functions
+//----------------------------------------------------------------------------------
+
+static Level *level;
+static Player player;
+
+//----------------------------------------------------------------------------------
+// Gameplay Screen Functions Definition
+//----------------------------------------------------------------------------------
 
 // Gameplay Screen Initialization logic
 void InitGameplayScreen(void)
@@ -99,7 +150,11 @@ void InitGameplayScreen(void)
     textureDriver = LoadTexture("resources/driver.png");
     textureBackground = LoadTexture("resources/night_city.png");
 
+    level = LevelGenerate();
     memset(&player, 0, sizeof(player));
+    player.pos.x = -10;
+    player.pos.z = MAP_SIZE/2.0;
+    player.pos.y = 200;
 }
 
 // Gameplay Screen Update logic
@@ -168,7 +223,11 @@ void DrawGameplayScreen(void)
     DrawTexture(textureBackground, -background_x + textureBackground.width, 0, WHITE);
 
     BeginMode3D(camera);
-        DrawBorderedCube((Vector3){10, 0.5, 0}, 1, 1, 1);
+
+        for (int i = 0; i < level->objs_count; ++i)
+        {
+            DrawBorderedCube((Vector3){level->objs[i].pos.x , 1, level->objs[i].pos.y}, 1, 2, 1);
+        }
 
     EndMode3D();
 
@@ -182,6 +241,8 @@ void UnloadGameplayScreen(void)
 {
     UnloadTexture(textureDriver);
     UnloadTexture(textureBackground);
+
+    UnloadLevel(level);
 }
 
 // Gameplay Screen should finish?
