@@ -33,11 +33,13 @@
 #include <string.h>
 #include <math.h>
 
-static const int MAP_SIZE = 1000;
+static const int MAP_SIZE = 500;
 static const int N_MAP_OBSTACLES = 4000;
 static const int PLAYER_DEATH_ANIMATION_TIME = 200;
-static const float CARROT_SPAN_DIST = 300;
+static const int PLAYER_CARROT_GRAB_ANIMATION_TIME = 60;
+static const float CARROT_SPAN_DIST = 200;
 static const int UI_FONT_SIZE = 8;
+static const int TARGET_N_CARROTS = 5;
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -49,6 +51,7 @@ static Texture2D textureDriver;
 static Texture2D textureBackground;
 
 static Sound fxBreak;
+static Sound fxGrab;
 
 typedef struct
 {
@@ -72,7 +75,9 @@ typedef struct
     Obstacle *objs;
     unsigned int objs_count;
 
+    int n_carrots;
     Vector3 carrot_pos;
+    int carrot_grab_anim;
 } Level;
 
 //----------------------------------------------------------------------------------
@@ -116,6 +121,7 @@ static void LevelRespawnCarrot(Level *level, const Player *player)
                 break;
         }
     }
+    level->carrot_grab_anim = 0;
 }
 
 static Level *LevelGenerate()
@@ -159,7 +165,19 @@ static void UpdatePlayer(Level *level, Player *player)
 {
     const float PLAYER_RAD = 0.3;
 
-    if (!player->time_death)
+    if (level->n_carrots == TARGET_N_CARROTS)
+    {
+        player->pos_spd = Vector3Scale(player->pos_spd, 0.95);
+        player->ang_spd *= 0.95;
+    }
+    else if (player->time_death)
+    {
+        player->time_death++;
+
+        player->pos_spd = Vector3Scale(player->pos_spd, 0.95);
+        player->ang_spd *= 0.95;
+    }
+    else
     {
         // React to controls
         if (IsKeyDown(KEY_A))
@@ -184,13 +202,6 @@ static void UpdatePlayer(Level *level, Player *player)
         // Accelerate towards target velocity (not phyisically accurate at all)
         player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
         player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
-    }
-    else
-    {
-        player->time_death++;
-
-        player->pos_spd = Vector3Scale(player->pos_spd, 0.95);
-        player->ang_spd *= 0.95;
     }
 
     // Collide with floor
@@ -232,7 +243,7 @@ static void UpdatePlayer(Level *level, Player *player)
             player->pos_spd.z = 0;
         }
 
-        if (!player->time_death)
+        if (!player->time_death && level->n_carrots < TARGET_N_CARROTS)
         {
             // Is collision fatal?
             float collision_magnitude = Vector3Distance(player->pos_spd, old_pos_spd);
@@ -274,6 +285,26 @@ static void DrawTextOutline(int pos_x, int pos_y, const char *text)
     DrawText(text, pos_x, pos_y, UI_FONT_SIZE, SCREEN_COLOR_BG);
 }
 
+float CarrotAngle(const Level *level, const Player *player)
+{
+    float angle = atan2f(- (level->carrot_pos.z - player->pos.z), level->carrot_pos.x - player->pos.x);
+
+    float delta = angle - player->ang;
+
+    if (delta < -PI)
+        return 2*PI + delta;
+
+    if (delta > PI)
+        return delta - 2*PI;
+
+    return delta;
+}
+
+float CarrotDistance(const Level *level, const Player *player)
+{
+    return Vector3Distance(player->pos, level->carrot_pos);
+}
+
 //----------------------------------------------------------------------------------
 // Local variables only for Gameplay Screen Functions
 //----------------------------------------------------------------------------------
@@ -303,6 +334,7 @@ void InitGameplayScreen(void)
     LevelRespawnCarrot(level, &player);
 
     fxBreak = LoadSound("resources/break.mp3");
+    fxGrab = LoadSound("resources/grab.mp3");
 
     PlayMusicStream(music);
 }
@@ -318,32 +350,29 @@ void UpdateGameplayScreen(void)
     if (player.time_death > 0)
         StopMusicStream(music);
 
-    // // Press enter or tap to change to ENDING screen
-    // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
-    // {
-    //     finishScreen = 1;
-    //     PlaySound(fxCoin);
-    // }
-}
+    if (CarrotDistance(level, &player) < 0.5)
+    {
+        level->n_carrots++;
+        LevelRespawnCarrot(level, &player);
+        level->carrot_grab_anim++;
+        PlaySound(fxGrab);
+        PauseMusicStream(music);
+    }
 
-float CarrotAngle(const Level *level, const Player *player)
-{
-    float angle = atan2f(- (level->carrot_pos.z - player->pos.z), level->carrot_pos.x - player->pos.x);
-
-    float delta = angle - player->ang;
-
-    if (delta < -PI)
-        return 2*PI + delta;
-
-    if (delta > PI)
-        return delta - 2*PI;
-
-    return delta;
-}
-
-float CarrotDistance(const Level *level, const Player *player)
-{
-    return Vector3Distance(player->pos, level->carrot_pos);
+    if (level->carrot_grab_anim > PLAYER_CARROT_GRAB_ANIMATION_TIME)
+    {
+        if (level->n_carrots >= TARGET_N_CARROTS)
+        {
+            finishScreen = 2;
+        }
+        else
+        {
+            ResumeMusicStream(music);
+            level->carrot_grab_anim = 0;
+        }
+    }
+    if (level->carrot_grab_anim)
+        level->carrot_grab_anim++;
 }
 
 static void DrawBorderedCube(Vector3 position, float width, float height, float length)
@@ -398,9 +427,18 @@ void DrawGameplayScreen(void)
 
     if (!player.time_death)
     {
-        DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
+        // Draw player
         DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
         DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 34);
+        if (level->carrot_grab_anim)
+        {
+            DrawTile(textureDriver, 12, 12, 0, 3, 36, 34);
+            DrawTile(textureDriver, 12, 12, 5, 0, 42, 28 - level->carrot_grab_anim/8);
+        }
+        else
+        {
+            DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
+        }
 
         // Carrot seeker
         float carrot_angle = CarrotAngle(level, &player);
@@ -426,9 +464,20 @@ void DrawGameplayScreen(void)
         DrawTextOutline(SCREEN_W - 4 * strlen(text), 24, text);
 
         char buffer[80];
-        sprintf(buffer, "%dm", (int) roundf(CarrotDistance(level, &player)));
-        int w = MeasureText(buffer, UI_FONT_SIZE);
-        DrawTextOutline(SCREEN_W/2 - w/2, 1, buffer);
+        if (level->carrot_grab_anim)
+        {
+            // Total carrots collected
+            sprintf(buffer, "%d/%d", level->n_carrots, TARGET_N_CARROTS);
+            int w = MeasureText(buffer, UI_FONT_SIZE);
+            DrawTextOutline(SCREEN_W/2 - w/2, 0, buffer);
+        }
+        else
+        {
+            // Distance to carrot
+            sprintf(buffer, "%dm", (int) roundf(CarrotDistance(level, &player)));
+            int w = MeasureText(buffer, UI_FONT_SIZE);
+            DrawTextOutline(SCREEN_W/2 - w/2, 0, buffer);
+        }
     }
     else
     {
@@ -447,6 +496,9 @@ void UnloadGameplayScreen(void)
     UnloadTexture(textureBackground);
 
     UnloadLevel(level);
+
+    UnloadSound(fxBreak);
+    UnloadSound(fxGrab);
 
     StopMusicStream(music);
 }
