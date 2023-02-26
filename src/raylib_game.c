@@ -72,7 +72,6 @@ int main(void)
     nokiaScreen = LoadRenderTexture(SCREEN_W, SCREEN_H);
 
     SetMusicVolume(music, 1.0f);
-    PlayMusicStream(music);
 
     // Setup and init first screen
     currentScreen = LOGO;

@@ -46,6 +46,8 @@ static int finishScreen = 0;
 static Texture2D textureDriver;
 static Texture2D textureBackground;
 
+static Sound fxBreak;
+
 typedef struct
 {
     float ang, ang_spd;
@@ -161,6 +163,7 @@ static void UpdatePlayer(Level *level, Player *player)
     else
     {
         player->time_death++;
+
         player->pos_spd = Vector3Scale(player->pos_spd, 0.95);
         player->ang_spd *= 0.95;
     }
@@ -204,11 +207,18 @@ static void UpdatePlayer(Level *level, Player *player)
             player->pos_spd.z = 0;
         }
 
-        // Is collision fatal?
-        float collision_magnitude = Vector3Distance(player->pos_spd, old_pos_spd);
+        if (!player->time_death)
+        {
+            // Is collision fatal?
+            float collision_magnitude = Vector3Distance(player->pos_spd, old_pos_spd);
 
-        if (collision_magnitude > 0.15)
-            player->time_death += 1;
+            if (collision_magnitude > 0.15)
+            {
+                player->time_death += 1;
+                StopMusicStream(music);
+                PlaySound(fxBreak);
+            }
+        }
     }
 
     // Move according to speed
@@ -250,6 +260,10 @@ void InitGameplayScreen(void)
     player.pos.x = -10;
     player.pos.z = MAP_SIZE/2.0;
     player.pos.y = 200;
+
+    fxBreak = LoadSound("resources/break.mp3");
+
+    PlayMusicStream(music);
 }
 
 // Gameplay Screen Update logic
@@ -259,6 +273,9 @@ void UpdateGameplayScreen(void)
 
     if (player.time_death >= PLAYER_DEATH_ANIMATION_TIME)
         finishScreen = 1;
+
+    if (player.time_death > 0)
+        StopMusicStream(music);
 
     // // Press enter or tap to change to ENDING screen
     // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
@@ -273,12 +290,12 @@ static void DrawBorderedCube(Vector3 position, float width, float height, float 
     DrawCube(position, width, height, length, SCREEN_COLOR_BG);
 
     BoundingBox box;
-    box.min.x = position.x - 0.5*width - 0.02;
-    box.max.x = position.x + 0.5*width + 0.02;
-    box.min.y = position.y - 0.5*height - 0.02;
-    box.max.y = position.y + 0.5*height + 0.02;
-    box.min.z = position.z - 0.5*length - 0.02;
-    box.max.z = position.z + 0.5*length + 0.02;
+    box.min.x = position.x - 0.5*width - 0.022;
+    box.max.x = position.x + 0.5*width + 0.022;
+    box.min.y = position.y - 0.5*height - 0.022;
+    box.max.y = position.y + 0.5*height + 0.022;
+    box.min.z = position.z - 0.5*length - 0.022;
+    box.max.z = position.z + 0.5*length + 0.022;
 
     DrawBoundingBox(box, SCREEN_COLOR_LIT);
 }
@@ -338,6 +355,8 @@ void UnloadGameplayScreen(void)
     UnloadTexture(textureBackground);
 
     UnloadLevel(level);
+
+    StopMusicStream(music);
 }
 
 // Gameplay Screen should finish?
