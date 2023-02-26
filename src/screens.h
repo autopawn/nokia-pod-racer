@@ -6,7 +6,7 @@
 // Nokia screen details
 //----------------------------------------------------------------------------------
 #define SCREEN_BORDER 24
-#define SCREEN_SCALE_MULT 6
+#define SCREEN_SCALE_MULT 8
 #define SCREEN_W 84
 #define SCREEN_H 48
 #define SCREEN_COLOR_BG (Color){0x87, 0x91, 0x88, 0xff}
