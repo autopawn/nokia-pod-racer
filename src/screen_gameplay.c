@@ -38,6 +38,7 @@ static int framesCounter = 0;
 static int finishScreen = 0;
 
 static Texture2D textureDriver;
+static Texture2D textureBackground;
 
 typedef struct
 {
@@ -75,9 +76,6 @@ static void UpdatePlayer(Player *player)
         player->pos.y = 0;
         player->pos_spd.y = 0;
     }
-
-    printf("player->pos %.3f %.3f %.3f\n", player->pos.x, player->pos.y, player->pos.z);
-    printf("player->ang %.3f \n", player->ang);
 }
 
 //----------------------------------------------------------------------------------
@@ -99,6 +97,7 @@ void InitGameplayScreen(void)
     finishScreen = 0;
 
     textureDriver = LoadTexture("resources/driver.png");
+    textureBackground = LoadTexture("resources/night_city.png");
 
     memset(&player, 0, sizeof(player));
 }
@@ -161,7 +160,12 @@ void DrawGameplayScreen(void)
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    DrawLine(0, 12, SCREEN_W, 12, SCREEN_COLOR_LIT);
+
+    int background_x = (int) roundf(-player.ang / (2 * PI) * textureBackground.width);
+    background_x = mod(background_x, textureBackground.width);
+
+    DrawTexture(textureBackground, -background_x, 0, WHITE);
+    DrawTexture(textureBackground, -background_x + textureBackground.width, 0, WHITE);
 
     BeginMode3D(camera);
         DrawBorderedCube((Vector3){10, 0.5, 0}, 1, 1, 1);
@@ -177,6 +181,7 @@ void DrawGameplayScreen(void)
 void UnloadGameplayScreen(void)
 {
     UnloadTexture(textureDriver);
+    UnloadTexture(textureBackground);
 }
 
 // Gameplay Screen should finish?

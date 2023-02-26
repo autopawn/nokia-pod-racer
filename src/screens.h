@@ -74,6 +74,16 @@ void DrawEndingScreen(void);
 void UnloadEndingScreen(void);
 int FinishEndingScreen(void);
 
+//----------------------------------------------------------------------------------
+// Utility functions
+//----------------------------------------------------------------------------------
+static inline int mod(int a, int b)
+{
+    int r = a % b;
+    return r < 0 ? r + b : r;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
