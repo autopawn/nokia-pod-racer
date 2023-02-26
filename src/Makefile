@@ -20,6 +20,11 @@
 #     3. This notice may not be removed or altered from any source distribution.
 #
 #**************************************************************************************************
+#
+#    This is an altered version of the original file that corresponds to the above copyright notice.
+#    Minor changes are included in order to suit the specific needs of this project.
+#
+#**************************************************************************************************
 
 .PHONY: all clean
 
@@ -33,7 +38,11 @@ PROJECT_NAME          ?= raylib_game
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
 
-RAYLIB_PATH           ?= /home/fcasas/Videos/raylib-web
+ifeq ($(PLATFORM),PLATFORM_DESKTOP)
+	RAYLIB_PATH           ?= /home/fcasas/Videos/raylib-desktop
+else
+	RAYLIB_PATH           ?= /home/fcasas/Videos/raylib-web
+endif
 
 # Locations of raylib.h and libraylib.a/libraylib.so
 # NOTE: Those variables are only used for PLATFORM_OS: LINUX, BSD
@@ -107,14 +116,14 @@ ifeq ($(PLATFORM),PLATFORM_DRM)
     endif
 endif
 
-# RAYLIB_PATH adjustment for LINUX platform
-# TODO: Do we really need this?
-ifeq ($(PLATFORM),PLATFORM_DESKTOP)
-    ifeq ($(PLATFORM_OS),LINUX)
-        RAYLIB_PREFIX  ?= ..
-        RAYLIB_PATH     = $(realpath $(RAYLIB_PREFIX))
-    endif
-endif
+# # RAYLIB_PATH adjustment for LINUX platform
+# # TODO: Do we really need this?
+# ifeq ($(PLATFORM),PLATFORM_DESKTOP)
+#     ifeq ($(PLATFORM_OS),LINUX)
+#         RAYLIB_PREFIX  ?= ..
+#         RAYLIB_PATH     = $(realpath $(RAYLIB_PREFIX))
+#     endif
+# endif
 
 # Default path for raylib on Raspberry Pi
 ifeq ($(PLATFORM),PLATFORM_RPI)
@@ -434,6 +443,12 @@ endif
 ifeq ($(PLATFORM),PLATFORM_DRM)
 	find . -type f -executable -delete
 	rm -fv *.o
+endif
+ifeq ($(PLATFORM),PLATFORM_WEB)
+	rm -fv *.o
+	rm -f $(PROJECT_NAME).data
+	rm -f $(PROJECT_NAME).html
+	rm -f $(PROJECT_NAME).js
 endif
 	@echo Cleaning done
 
