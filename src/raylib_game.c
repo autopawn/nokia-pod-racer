@@ -21,7 +21,7 @@
 // Shared Variables Definition (global)
 // NOTE: Those variables are shared between modules through screens.h
 //----------------------------------------------------------------------------------
-GameScreen currentScreen = GAMEPLAY;
+GameScreen currentScreen = LOGO;
 Font font = { 0 };
 Music music = { 0 };
 Sound fxCoin = { 0 };
@@ -291,10 +291,11 @@ static void UpdateDrawFrame(void)
     EndTextureMode();
 
     BeginDrawing();
-        ClearBackground(SCREEN_COLOR_BG);
+        ClearBackground(BLACK);
 
-        DrawTextureEx(nokiaScreen.texture, (Vector2){SCREEN_BORDER, SCREEN_BORDER},
-            0, SCREEN_SCALE_MULT, WHITE);
+        DrawTexturePro(nokiaScreen.texture, (Rectangle){0, 0, SCREEN_W, -SCREEN_H},
+                (Rectangle){SCREEN_BORDER, SCREEN_BORDER, SCREEN_SCALE_MULT*SCREEN_W, SCREEN_SCALE_MULT*SCREEN_H},
+                (Vector2){0, 0}, 0, WHITE);
 
         DrawFPS(10, 10);
     EndDrawing();

@@ -9,8 +9,8 @@
 #define SCREEN_SCALE_MULT 6
 #define SCREEN_W 84
 #define SCREEN_H 48
-#define SCREEN_COLOR_LIT (Color){0x9b, 0xc7, 0x00, 0xff}
-#define SCREEN_COLOR_BG (Color){0x43, 0x52, 0x3d, 0xff}
+#define SCREEN_COLOR_BG (Color){0x87, 0x91, 0x88, 0xff}
+#define SCREEN_COLOR_LIT (Color){0x1a, 0x19, 0x14, 0xff}
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
