@@ -180,16 +180,16 @@ static void UpdatePlayer(Level *level, Player *player)
     else
     {
         // React to controls
-        if (IsKeyDown(KEY_A))
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_KP_4))
             player->turbo_l = 2;
-        else if (IsKeyDown(KEY_Z))
+        else if (IsKeyDown(KEY_Z) || IsKeyDown(KEY_KP_1))
             player->turbo_l = 1;
         else
             player->turbo_l = 0;
 
-        if (IsKeyDown(KEY_K))
+        if (IsKeyDown(KEY_K) || IsKeyDown(KEY_KP_6))
             player->turbo_r = 2;
-        else if (IsKeyDown(KEY_M))
+        else if (IsKeyDown(KEY_M) || IsKeyDown(KEY_KP_3))
             player->turbo_r = 1;
         else
             player->turbo_r = 0;
