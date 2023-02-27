@@ -328,8 +328,6 @@ static void UpdateDrawFrame(void)
                         SCREEN_BORDER + x*SCREEN_SCALE_MULT, SCREEN_BORDER + SCREEN_H*SCREEN_SCALE_MULT,
                         SCREEN_COLOR_BG);
         }
-
-        DrawFPS(1, 1);
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
