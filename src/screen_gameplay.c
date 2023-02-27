@@ -199,7 +199,7 @@ static void UpdatePlayer(Level *level, Player *player)
         // Target velocity
         float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
         float tgt_front_spd = (player->turbo_l + player->turbo_r - 0.4*absf(player->turbo_r - player->turbo_l)) * 0.1;
-        Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -10, -tgt_front_spd*sinf(player->ang)};
+        Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -5, -tgt_front_spd*sinf(player->ang)};
 
         // Accelerate towards target velocity (not phyisically accurate at all)
         player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;

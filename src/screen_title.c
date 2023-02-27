@@ -26,11 +26,17 @@
 #include "raylib.h"
 #include "screens.h"
 
+#include <stdlib.h>
+
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
 //----------------------------------------------------------------------------------
 static int framesCounter = 0;
 static int finishScreen = 0;
+static Texture2D textureBunny;
+static Texture2D textureBunnyAlt;
+static Texture2D texturePod;
+static Texture2D textureText;
 
 //----------------------------------------------------------------------------------
 // Title Screen Functions Definition
@@ -42,18 +48,21 @@ void InitTitleScreen(void)
     // TODO: Initialize TITLE screen variables here!
     framesCounter = 0;
     finishScreen = 0;
+
+    textureBunny = LoadTexture("resources/title_bunny.png");
+    textureBunnyAlt = LoadTexture("resources/title_bunny_alt.png");
+    texturePod = LoadTexture("resources/title_pod.png");
+    textureText = LoadTexture("resources/title_text.png");
 }
 
 // Title Screen Update logic
 void UpdateTitleScreen(void)
 {
-    // TODO: Update TITLE screen variables here!
+    framesCounter++;
 
-    // Press enter or tap to change to GAMEPLAY screen
-    if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+    if (GetKeyPressed())
     {
-        //finishScreen = 1;   // OPTIONS
-        finishScreen = 2;   // GAMEPLAY
+        finishScreen = 1;
         PlaySound(fxCoin);
     }
 }
@@ -61,17 +70,38 @@ void UpdateTitleScreen(void)
 // Title Screen Draw logic
 void DrawTitleScreen(void)
 {
-    // TODO: Draw TITLE screen here!
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GREEN);
-    Vector2 pos = { 20, 10 };
-    DrawTextEx(font, "TITLE SCREEN", pos, font.baseSize*3.0f, 4, DARKGREEN);
-    DrawText("PRESS ENTER or TAP to JUMP to GAMEPLAY SCREEN", 120, 220, 20, DARKGREEN);
+    if (framesCounter >= 60)
+    {
+        int delta_x = (rand()%5 - 2)/2;
+        int delta_y = (rand()%5 - 2)/2;
+
+        DrawTexture(textureText, 0, 0, WHITE);
+        DrawTexture(textureText, delta_x, delta_y, WHITE);
+        DrawTexture(textureText, -delta_x, -delta_y, WHITE);
+        DrawTexture(texturePod, 0, 0, WHITE);
+
+        if (framesCounter < 160)
+            DrawTexture(textureBunny, 0, 0, WHITE);
+        else
+            DrawTexture(textureBunnyAlt, 0, 0, WHITE);
+    }
+    else
+    {
+        int offset = 2*(framesCounter*framesCounter)/60;
+
+        DrawTexture(texturePod, 2*60 - offset, 0, WHITE);
+        DrawTexture(textureBunny, offset - 2*60, 0, WHITE);
+    }
+
 }
 
 // Title Screen Unload logic
 void UnloadTitleScreen(void)
 {
-    // TODO: Unload TITLE screen variables here!
+    UnloadTexture(textureBunny);
+    UnloadTexture(textureBunnyAlt);
+    UnloadTexture(texturePod);
+    UnloadTexture(textureText);
 }
 
 // Title Screen should finish?

@@ -244,14 +244,14 @@ static void UpdateDrawFrame(void)
             {
                 UpdateLogoScreen();
 
-                if (FinishLogoScreen()) TransitionToScreen(GAMEPLAY);
+                if (FinishLogoScreen()) TransitionToScreen(TITLE);
 
             } break;
             case TITLE:
             {
                 UpdateTitleScreen();
 
-                if (FinishTitleScreen() == 1) TransitionToScreen(OPTIONS);
+                if (FinishTitleScreen() == 1) TransitionToScreen(GAMEPLAY);
                 else if (FinishTitleScreen() == 2) TransitionToScreen(GAMEPLAY);
 
             } break;
@@ -273,7 +273,13 @@ static void UpdateDrawFrame(void)
             {
                 UpdateEndingScreen();
 
-                if (FinishEndingScreen() == 1) TransitionToScreen(GAMEPLAY);
+                if (FinishEndingScreen() == 1)
+                {
+                    if (lastGameComplete)
+                        TransitionToScreen(TITLE);
+                    else
+                        TransitionToScreen(GAMEPLAY);
+                }
 
             } break;
             default: break;
