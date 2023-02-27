@@ -69,7 +69,7 @@ int main(void)
     // Load global data (assets that must be available in all screens, i.e. font)
     font = LoadFont("resources/mecha.png");
     music = LoadMusicStream("resources/music2.mp3");
-    fxCoin = LoadSound("resources/coin.wav");
+    fxCoin = LoadSound("resources/coin.mp3");
 
     nokiaScreen = LoadRenderTexture(SCREEN_W, SCREEN_H);
 
