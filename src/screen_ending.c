@@ -72,17 +72,17 @@ void DrawEndingScreen(void)
     {
         sprintf(buffer, "You crashed!");
         w = MeasureText(buffer, font_size);
-        DrawText(buffer, SCREEN_W/2 - w/2, 12, font_size, SCREEN_COLOR_LIT);
+        DrawText(buffer, SCREEN_W/2 - w/2, 18, font_size, SCREEN_COLOR_LIT);
     }
     else
     {
         sprintf(buffer, "Complete!");
         w = MeasureText(buffer, font_size);
-        DrawText(buffer, SCREEN_W/2 - w/2, 12, font_size, SCREEN_COLOR_LIT);
+        DrawText(buffer, SCREEN_W/2 - w/2, 8, font_size, SCREEN_COLOR_LIT);
 
-        sprintf(buffer, "Time: %02d:%02d", lastGameComplete/60, lastGameComplete%60);
+        sprintf(buffer, "Time: %02d:%02d", lastGameTime/60, lastGameTime%60);
         w = MeasureText(buffer, font_size);
-        DrawText(buffer, SCREEN_W/2 - w/2, 32, font_size, SCREEN_COLOR_LIT);
+        DrawText(buffer, SCREEN_W/2 - w/2, 28, font_size, SCREEN_COLOR_LIT);
     }
 }
 
