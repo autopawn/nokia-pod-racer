@@ -26,6 +26,10 @@
 #include "raylib.h"
 #include "screens.h"
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
 //----------------------------------------------------------------------------------
@@ -47,10 +51,7 @@ void InitEndingScreen(void)
 // Ending Screen Update logic
 void UpdateEndingScreen(void)
 {
-    // TODO: Update ENDING screen variables here!
-
-    // Press enter or tap to return to TITLE screen
-    if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+    if (GetKeyPressed())
     {
         finishScreen = 1;
         PlaySound(fxCoin);
@@ -60,12 +61,29 @@ void UpdateEndingScreen(void)
 // Ending Screen Draw logic
 void DrawEndingScreen(void)
 {
-    // TODO: Draw ENDING screen here!
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), BLUE);
+    const int font_size = 8;
 
-    Vector2 pos = { 20, 10 };
-    DrawTextEx(font, "ENDING SCREEN", pos, font.baseSize*3.0f, 4, DARKBLUE);
-    DrawText("PRESS ENTER or TAP to RETURN to TITLE SCREEN", 120, 220, 20, DARKBLUE);
+    DrawRectangleLines(1, 1, SCREEN_W - 2, SCREEN_H - 2, SCREEN_COLOR_LIT);
+
+    char buffer[200];
+    int w;
+
+    if (!lastGameComplete)
+    {
+        sprintf(buffer, "You crashed!");
+        w = MeasureText(buffer, font_size);
+        DrawText(buffer, SCREEN_W/2 - w/2, 12, font_size, SCREEN_COLOR_LIT);
+    }
+    else
+    {
+        sprintf(buffer, "Complete!");
+        w = MeasureText(buffer, font_size);
+        DrawText(buffer, SCREEN_W/2 - w/2, 12, font_size, SCREEN_COLOR_LIT);
+
+        sprintf(buffer, "Time: %02d:%02d", lastGameComplete/60, lastGameComplete%60);
+        w = MeasureText(buffer, font_size);
+        DrawText(buffer, SCREEN_W/2 - w/2, 32, font_size, SCREEN_COLOR_LIT);
+    }
 }
 
 // Ending Screen Unload logic

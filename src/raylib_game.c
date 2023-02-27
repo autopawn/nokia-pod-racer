@@ -266,15 +266,14 @@ static void UpdateDrawFrame(void)
             {
                 UpdateGameplayScreen();
 
-                if (FinishGameplayScreen() == 1) TransitionToScreen(GAMEPLAY);
-                else if (FinishGameplayScreen() == 2) TransitionToScreen(GAMEPLAY);
+                if (FinishGameplayScreen()) TransitionToScreen(ENDING);
 
             } break;
             case ENDING:
             {
                 UpdateEndingScreen();
 
-                if (FinishEndingScreen() == 1) TransitionToScreen(TITLE);
+                if (FinishEndingScreen() == 1) TransitionToScreen(GAMEPLAY);
 
             } break;
             default: break;
