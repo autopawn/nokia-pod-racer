@@ -87,10 +87,10 @@ void DrawTitleScreen(void)
     }
     else
     {
-        int offset = 2*(framesCounter*framesCounter)/60;
+        int offset = 80*(60 - framesCounter)*(60 - framesCounter)/(60*60);
 
-        DrawTexture(texturePod, 2*60 - offset, 0, WHITE);
-        DrawTexture(textureBunny, offset - 2*60, 0, WHITE);
+        DrawTexture(texturePod, offset, 0, WHITE);
+        DrawTexture(textureBunny, -offset, 0, WHITE);
     }
 
 }
