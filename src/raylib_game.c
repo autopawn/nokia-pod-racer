@@ -98,6 +98,7 @@ int main(void)
     switch (currentScreen)
     {
         case LOGO: UnloadLogoScreen(); break;
+        case HAREMONIC: UnloadHaremonicScreen(); break;
         case TITLE: UnloadTitleScreen(); break;
         case GAMEPLAY: UnloadGameplayScreen(); break;
         case ENDING: UnloadEndingScreen(); break;
@@ -128,6 +129,7 @@ static void ChangeToScreen(GameScreen screen)
     switch (currentScreen)
     {
         case LOGO: UnloadLogoScreen(); break;
+        case HAREMONIC: UnloadHaremonicScreen(); break;
         case TITLE: UnloadTitleScreen(); break;
         case GAMEPLAY: UnloadGameplayScreen(); break;
         case ENDING: UnloadEndingScreen(); break;
@@ -138,6 +140,7 @@ static void ChangeToScreen(GameScreen screen)
     switch (screen)
     {
         case LOGO: InitLogoScreen(); break;
+        case HAREMONIC: InitHaremonicScreen(); break;
         case TITLE: InitTitleScreen(); break;
         case GAMEPLAY: InitGameplayScreen(); break;
         case ENDING: InitEndingScreen(); break;
@@ -172,6 +175,7 @@ static void UpdateTransition(void)
             switch (transFromScreen)
             {
                 case LOGO: UnloadLogoScreen(); break;
+                case HAREMONIC: UnloadHaremonicScreen(); break;
                 case TITLE: UnloadTitleScreen(); break;
                 case OPTIONS: UnloadOptionsScreen(); break;
                 case GAMEPLAY: UnloadGameplayScreen(); break;
@@ -183,6 +187,7 @@ static void UpdateTransition(void)
             switch (transToScreen)
             {
                 case LOGO: InitLogoScreen(); break;
+                case HAREMONIC: InitHaremonicScreen(); break;
                 case TITLE: InitTitleScreen(); break;
                 case GAMEPLAY: InitGameplayScreen(); break;
                 case ENDING: InitEndingScreen(); break;
@@ -244,7 +249,14 @@ static void UpdateDrawFrame(void)
             {
                 UpdateLogoScreen();
 
-                if (FinishLogoScreen()) TransitionToScreen(TITLE);
+                if (FinishLogoScreen()) TransitionToScreen(HAREMONIC);
+
+            } break;
+            case HAREMONIC:
+            {
+                UpdateHaremonicScreen();
+
+                if (FinishHaremonicScreen()) TransitionToScreen(TITLE);
 
             } break;
             case TITLE:
@@ -297,6 +309,7 @@ static void UpdateDrawFrame(void)
         switch(currentScreen)
         {
             case LOGO: DrawLogoScreen(); break;
+            case HAREMONIC: DrawHaremonicScreen(); break;
             case TITLE: DrawTitleScreen(); break;
             case OPTIONS: DrawOptionsScreen(); break;
             case GAMEPLAY: DrawGameplayScreen(); break;

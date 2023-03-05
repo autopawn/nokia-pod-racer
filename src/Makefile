@@ -387,6 +387,7 @@ endif
 PROJECT_SOURCE_FILES ?= \
     raylib_game.c \
     screen_logo.c \
+    screen_haremonic.c \
     screen_title.c \
     screen_options.c \
     screen_gameplay.c \

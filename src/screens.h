@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-typedef enum GameScreen { UNKNOWN = -1, LOGO = 0, TITLE, OPTIONS, GAMEPLAY, ENDING } GameScreen;
+typedef enum GameScreen { UNKNOWN = -1, LOGO = 0, HAREMONIC, TITLE, OPTIONS, GAMEPLAY, ENDING } GameScreen;
 
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)
@@ -32,13 +32,22 @@ extern "C" {            // Prevents name mangling of functions
 #endif
 
 //----------------------------------------------------------------------------------
-// Logo Screen Functions Declaration
+// Raylib Logo Screen Functions Declaration
 //----------------------------------------------------------------------------------
 void InitLogoScreen(void);
 void UpdateLogoScreen(void);
 void DrawLogoScreen(void);
 void UnloadLogoScreen(void);
 int FinishLogoScreen(void);
+
+//----------------------------------------------------------------------------------
+// Haremonic Logo Screen Functions Declaration
+//----------------------------------------------------------------------------------
+void InitHaremonicScreen(void);
+void UpdateHaremonicScreen(void);
+void DrawHaremonicScreen(void);
+void UnloadHaremonicScreen(void);
+int FinishHaremonicScreen(void);
 
 //----------------------------------------------------------------------------------
 // Title Screen Functions Declaration
