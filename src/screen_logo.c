@@ -59,10 +59,10 @@ void InitLogoScreen(void)
     logoPositionX = SCREEN_W/2 - 18;
     logoPositionY = 12;
 
-    topSideRecWidth = 1;
-    leftSideRecHeight = 1;
-    bottomSideRecWidth = 1;
-    rightSideRecHeight = 1;
+    topSideRecWidth = 0;
+    leftSideRecHeight = 0;
+    bottomSideRecWidth = 0;
+    rightSideRecHeight = 0;
 
     state = 0;
 }
@@ -82,15 +82,15 @@ void UpdateLogoScreen(void)
     }
     else if (state == 1)            // State 1: Bars animation logic: top and left
     {
-        topSideRecWidth += 1;
-        leftSideRecHeight += 1;
+        topSideRecWidth += 2;
+        leftSideRecHeight += 2;
 
         if (topSideRecWidth == 34) state = 2;
     }
     else if (state == 2)            // State 2: Bars animation logic: bottom and right
     {
-        bottomSideRecWidth += 1;
-        rightSideRecHeight += 1;
+        bottomSideRecWidth += 2;
+        rightSideRecHeight += 2;
 
         if (bottomSideRecWidth == 34) state = 3;
     }
@@ -100,7 +100,7 @@ void UpdateLogoScreen(void)
 
         if (lettersCount < 8)
         {
-            if (framesCounter/2)   // Every 4 frames, one more letter!
+            if (framesCounter/2)   // Every 2 frames, one more letter!
             {
                 lettersCount++;
                 framesCounter = 0;

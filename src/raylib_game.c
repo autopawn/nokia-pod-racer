@@ -100,6 +100,7 @@ int main(void)
         case LOGO: UnloadLogoScreen(); break;
         case HAREMONIC: UnloadHaremonicScreen(); break;
         case TITLE: UnloadTitleScreen(); break;
+        case OPTIONS: UnloadOptionsScreen(); break;
         case GAMEPLAY: UnloadGameplayScreen(); break;
         case ENDING: UnloadEndingScreen(); break;
         default: break;
@@ -131,6 +132,7 @@ static void ChangeToScreen(GameScreen screen)
         case LOGO: UnloadLogoScreen(); break;
         case HAREMONIC: UnloadHaremonicScreen(); break;
         case TITLE: UnloadTitleScreen(); break;
+        case OPTIONS: UnloadOptionsScreen(); break;
         case GAMEPLAY: UnloadGameplayScreen(); break;
         case ENDING: UnloadEndingScreen(); break;
         default: break;
@@ -142,6 +144,7 @@ static void ChangeToScreen(GameScreen screen)
         case LOGO: InitLogoScreen(); break;
         case HAREMONIC: InitHaremonicScreen(); break;
         case TITLE: InitTitleScreen(); break;
+        case OPTIONS: InitOptionsScreen(); break;
         case GAMEPLAY: InitGameplayScreen(); break;
         case ENDING: InitEndingScreen(); break;
         default: break;
@@ -189,6 +192,7 @@ static void UpdateTransition(void)
                 case LOGO: InitLogoScreen(); break;
                 case HAREMONIC: InitHaremonicScreen(); break;
                 case TITLE: InitTitleScreen(); break;
+                case OPTIONS: InitOptionsScreen(); break;
                 case GAMEPLAY: InitGameplayScreen(); break;
                 case ENDING: InitEndingScreen(); break;
                 default: break;
