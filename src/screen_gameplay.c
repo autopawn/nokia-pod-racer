@@ -270,6 +270,14 @@ static void UpdatePlayer(Level *level, Player *player)
 static void DrawTile(Texture2D tex, int tile_size_x, int tile_size_y, int tile_x, int tile_y,
         int pos_x, int pos_y)
 {
+    int ntiles_x = tex.width/tile_size_x;
+    int ntiles_y = tex.height/tile_size_y;
+
+    if (tile_x < 0) tile_x = 0;
+    if (tile_x >= ntiles_x) tile_x = ntiles_x - 1;
+    if (tile_y < 0) tile_y = 0;
+    if (tile_y >= ntiles_y) tile_y = ntiles_y - 1;
+
     Rectangle src = {tile_size_x*tile_x, tile_size_y*tile_y, tile_size_x, tile_size_y};
 
     DrawTextureRec(tex, src, (Vector2){pos_x, pos_y}, WHITE);
