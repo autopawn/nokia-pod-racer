@@ -41,6 +41,9 @@ static const float CARROT_SPAN_DIST = 200;
 static const int UI_FONT_SIZE = 8;
 static const int TARGET_N_CARROTS = 5;
 
+const float PLAYER_RAD = 0.3;
+const float CARROT_RAD = 0.2;
+
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
 //----------------------------------------------------------------------------------
@@ -165,8 +168,6 @@ static void UnloadLevel(Level *level)
 
 static void UpdatePlayer(Level *level, Player *player)
 {
-    const float PLAYER_RAD = 0.3;
-
     if (level->n_carrots == TARGET_N_CARROTS)
     {
         player->pos_spd = Vector3Scale(player->pos_spd, 0.95);
@@ -362,7 +363,7 @@ void UpdateGameplayScreen(void)
     if (player.time_death > 0)
         StopMusicStream(music);
 
-    if (CarrotDistance(level, &player) < 0.5)
+    if (CarrotDistance(level, &player) <= PLAYER_RAD + CARROT_RAD)
     {
         level->n_carrots++;
         LevelRespawnCarrot(level, &player);
@@ -439,7 +440,8 @@ void DrawGameplayScreen(void)
         }
 
         // Draw Carrot
-        DrawCube((Vector3){level->carrot_pos.x , 0.3, level->carrot_pos.z}, 0.2, 0.2, 0.2, SCREEN_COLOR_LIT);
+        DrawCube((Vector3){level->carrot_pos.x , 0.1 + CARROT_RAD, level->carrot_pos.z},
+                CARROT_RAD, CARROT_RAD, CARROT_RAD, SCREEN_COLOR_LIT);
 
     EndMode3D();
 
