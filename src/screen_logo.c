@@ -120,20 +120,20 @@ void DrawLogoScreen(void)
     if (state == 0)         // Draw blinking top-left square corner
     {
         if ((framesCounter/4)%2)
-            DrawRectangle(logoPositionX, logoPositionY, 1, 1, BLACK);
+            DrawRectangle(logoPositionX, logoPositionY, 1, 1, SCREEN_COLOR_LIT);
     }
     else if (state == 1)    // Draw bars animation: top and left
     {
-        DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 1, BLACK);
-        DrawRectangle(logoPositionX, logoPositionY, 1, leftSideRecHeight, BLACK);
+        DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 1, SCREEN_COLOR_LIT);
+        DrawRectangle(logoPositionX, logoPositionY, 1, leftSideRecHeight, SCREEN_COLOR_LIT);
     }
     else if (state == 2)    // Draw bars animation: bottom and right
     {
-        DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 1, BLACK);
-        DrawRectangle(logoPositionX, logoPositionY, 1, leftSideRecHeight, BLACK);
+        DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 1, SCREEN_COLOR_LIT);
+        DrawRectangle(logoPositionX, logoPositionY, 1, leftSideRecHeight, SCREEN_COLOR_LIT);
 
-        DrawRectangle(logoPositionX + 33, logoPositionY, 1, rightSideRecHeight, BLACK);
-        DrawRectangle(logoPositionX, logoPositionY + 33, bottomSideRecWidth, 1, BLACK);
+        DrawRectangle(logoPositionX + 33, logoPositionY, 1, rightSideRecHeight, SCREEN_COLOR_LIT);
+        DrawRectangle(logoPositionX, logoPositionY + 33, bottomSideRecWidth, 1, SCREEN_COLOR_LIT);
     }
     else if (state == 3)    // Draw "raylib" text-write animation + "powered by"
     {
