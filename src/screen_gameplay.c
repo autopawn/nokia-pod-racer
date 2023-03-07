@@ -496,12 +496,12 @@ void DrawGameplayScreen(void)
             // Time counter
             int seconds = level->time_playing / 60;
             sprintf(buffer, "%02d:%02d", seconds/60, seconds%60);
-            DrawTextOutline(0, 0, buffer);
+            DrawTextOutline(1, 0, buffer);
 
             // Distance to carrot
             sprintf(buffer, "%dm", (int) roundf(CarrotDistance(level, &player)));
             int w = MeasureText(buffer, UI_FONT_SIZE);
-            DrawTextOutline(SCREEN_W - w, 0, buffer);
+            DrawTextOutline(SCREEN_W - w - 1, 0, buffer);
         }
     }
     else

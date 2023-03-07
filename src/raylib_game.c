@@ -327,7 +327,12 @@ static void UpdateDrawFrame(void)
     EndTextureMode();
 
     BeginDrawing();
-        ClearBackground(BLACK);
+        Color color_bg = SCREEN_COLOR_BG;
+        color_bg.r /= 4;
+        color_bg.g /= 4;
+        color_bg.b /= 4;
+
+        ClearBackground(color_bg);
 
         DrawTexturePro(nokiaScreen.texture, (Rectangle){0, 0, SCREEN_W, -SCREEN_H},
                 (Rectangle){SCREEN_BORDER, SCREEN_BORDER, SCREEN_SCALE_MULT*SCREEN_W, SCREEN_SCALE_MULT*SCREEN_H},
@@ -335,15 +340,17 @@ static void UpdateDrawFrame(void)
 
         if (pixelSeparation)
         {
+            Color line_color = ColorAlpha(SCREEN_COLOR_BG, 0.5);
+
             for (int y = 0; y <= SCREEN_H; ++y)
                 DrawLine(SCREEN_BORDER, SCREEN_BORDER + y*SCREEN_SCALE_MULT,
                         SCREEN_BORDER + SCREEN_W*SCREEN_SCALE_MULT, SCREEN_BORDER + y*SCREEN_SCALE_MULT,
-                        SCREEN_COLOR_BG);
+                        line_color);
 
             for (int x = 0; x <= SCREEN_W; ++x)
                 DrawLine(SCREEN_BORDER + x*SCREEN_SCALE_MULT, SCREEN_BORDER,
                         SCREEN_BORDER + x*SCREEN_SCALE_MULT, SCREEN_BORDER + SCREEN_H*SCREEN_SCALE_MULT,
-                        SCREEN_COLOR_BG);
+                        line_color);
         }
     EndDrawing();
     //----------------------------------------------------------------------------------
