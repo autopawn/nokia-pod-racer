@@ -42,7 +42,9 @@ static const int UI_FONT_SIZE = 8;
 static const int TARGET_N_CARROTS = 5;
 
 const float PLAYER_RAD = 0.3;
-const float CARROT_RAD = 0.2;
+const float CARROT_RAD = 0.24;
+
+const float LOD_DISTANCE = 30;
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -67,9 +69,20 @@ typedef struct
     int time_death;
 } Player;
 
+typedef enum
+{
+    OBSTACLE_BUILDING,
+    OBSTACLE_LAMP,
+} ObstacleType;
+
+static const float OBSTACLE_RAD[] = {
+    0.5,
+    0.125,
+};
+
 typedef struct
 {
-    bool type;
+    ObstacleType type;
     Vector3 pos;
 } Obstacle;
 
@@ -93,13 +106,15 @@ static bool LevelCheckCollision(const Level *level, Vector3 point, float rad)
 {
     for (int i = 0; i < level->objs_count; ++i)
     {
-        if (point.x + rad <= level->objs[i].pos.x - 0.5)
+        float obj_rad = OBSTACLE_RAD[level->objs[i].type];
+
+        if (point.x + rad <= level->objs[i].pos.x - obj_rad)
             continue;
-        if (point.x - rad >= level->objs[i].pos.x + 0.5)
+        if (point.x - rad >= level->objs[i].pos.x + obj_rad)
             continue;
-        if (point.z + rad <= level->objs[i].pos.z - 0.5)
+        if (point.z + rad <= level->objs[i].pos.z - obj_rad)
             continue;
-        if (point.z - rad >= level->objs[i].pos.z + 0.5)
+        if (point.z - rad >= level->objs[i].pos.z + obj_rad)
             continue;
 
         return true;
@@ -149,6 +164,11 @@ static Level *LevelGenerate()
             obs.pos.x = pos_x;
             obs.pos.y = 0;
             obs.pos.z = pos_z;
+
+            if (currentLevel == LEVEL_BULDING_ZONE)
+                obs.type = OBSTACLE_BUILDING;
+            else if (currentLevel == LEVEL_STREET_LIGHTS)
+                obs.type = OBSTACLE_LAMP;
 
             if (!LevelCheckCollision(level, obs.pos, 0.2))
                 break;
@@ -200,7 +220,7 @@ static void UpdatePlayer(Level *level, Player *player)
         // Target velocity
         float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
         float tgt_front_spd = (player->turbo_l + player->turbo_r - 0.4*absf(player->turbo_r - player->turbo_l)) * 0.1;
-        Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -5, -tgt_front_spd*sinf(player->ang)};
+        Vector3 tgt_spd = (Vector3){tgt_front_spd*cosf(player->ang), -10, -tgt_front_spd*sinf(player->ang)};
 
         // Accelerate towards target velocity (not phyisically accurate at all)
         player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
@@ -394,19 +414,41 @@ void UpdateGameplayScreen(void)
         level->carrot_grab_anim++;
 }
 
-static void DrawBorderedCube(Vector3 position, float width, float height, float length)
+static void DrawBorderedCube(Vector3 position, float width, float height, float length, bool inv)
 {
-    DrawCube(position, width, height, length, SCREEN_COLOR_BG);
+    DrawCube(position, width, height, length, inv? SCREEN_COLOR_LIT : SCREEN_COLOR_BG);
 
     BoundingBox box;
-    box.min.x = position.x - 0.5*width - 0.022;
-    box.max.x = position.x + 0.5*width + 0.022;
-    box.min.y = position.y - 0.5*height - 0.022;
-    box.max.y = position.y + 0.5*height + 0.022;
-    box.min.z = position.z - 0.5*length - 0.022;
-    box.max.z = position.z + 0.5*length + 0.022;
+    box.min.x = position.x - 0.5*width - 0.01;
+    box.max.x = position.x + 0.5*width + 0.01;
+    box.min.y = position.y - 0.5*height - 0.01;
+    box.max.y = position.y + 0.5*height + 0.01;
+    box.min.z = position.z - 0.5*length - 0.01;
+    box.max.z = position.z + 0.5*length + 0.01;
 
-    DrawBoundingBox(box, SCREEN_COLOR_LIT);
+    DrawBoundingBox(box, inv? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
+}
+
+static void DrawObstacle(Obstacle obj, bool detailed)
+{
+    switch (obj.type)
+    {
+        case OBSTACLE_BUILDING:
+            DrawBorderedCube((Vector3){obj.pos.x , 1, obj.pos.z}, 1, 2, 1, false);
+        break;
+        case OBSTACLE_LAMP:
+            DrawBorderedCube((Vector3){obj.pos.x , 0.8, obj.pos.z}, 0.25, 1.6, 0.25, false);
+            if (detailed)
+            {
+                DrawBorderedCube((Vector3){obj.pos.x , 1.3, obj.pos.z}, 0.8, 0.2, 0.8, false);
+                DrawCylinder(obj.pos, 4, 4, 0, 15, SCREEN_COLOR_BG);
+            }
+            else
+            {
+                DrawCylinder(obj.pos, 4, 4, 0, 5, SCREEN_COLOR_BG);
+            }
+        break;
+    }
 }
 
 // Gameplay Screen Draw logic
@@ -429,6 +471,9 @@ void DrawGameplayScreen(void)
     int background_x = (int) roundf(-player.ang / (2 * PI) * textureBackground.width);
     background_x = mod(background_x, textureBackground.width);
 
+    if (currentLevel == LEVEL_STREET_LIGHTS)
+        ClearBackground(SCREEN_COLOR_LIT);
+
     DrawTexture(textureBackground, -background_x, 0, WHITE);
     DrawTexture(textureBackground, -background_x + textureBackground.width, 0, WHITE);
 
@@ -436,12 +481,13 @@ void DrawGameplayScreen(void)
 
         for (int i = 0; i < level->objs_count; ++i)
         {
-            DrawBorderedCube((Vector3){level->objs[i].pos.x , 1, level->objs[i].pos.z}, 1, 2, 1);
+            bool detailed = Vector3Distance(camera.position, level->objs[i].pos) <= LOD_DISTANCE;
+            DrawObstacle(level->objs[i], detailed);
         }
 
         // Draw Carrot
-        DrawCube((Vector3){level->carrot_pos.x , 0.1 + CARROT_RAD, level->carrot_pos.z},
-                CARROT_RAD, CARROT_RAD, CARROT_RAD, SCREEN_COLOR_LIT);
+        DrawBorderedCube((Vector3){level->carrot_pos.x , 0.1 + CARROT_RAD, level->carrot_pos.z},
+                CARROT_RAD, CARROT_RAD, CARROT_RAD, true);
 
     EndMode3D();
 

@@ -17,10 +17,16 @@
 //----------------------------------------------------------------------------------
 typedef enum GameScreen { UNKNOWN = -1, LOGO = 0, HAREMONIC, TITLE, OPTIONS, GAMEPLAY, ENDING } GameScreen;
 
+typedef enum LevelArea {
+    LEVEL_BULDING_ZONE = 0,
+    LEVEL_STREET_LIGHTS = 1,
+} LevelArea;
+
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)
 //----------------------------------------------------------------------------------
 extern GameScreen currentScreen;
+extern LevelArea currentLevel;
 extern Font font;
 extern Music music;
 extern Sound fxCoin;

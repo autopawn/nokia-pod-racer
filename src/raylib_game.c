@@ -22,6 +22,7 @@
 // NOTE: Those variables are shared between modules through screens.h
 //----------------------------------------------------------------------------------
 GameScreen currentScreen = LOGO;
+LevelArea currentLevel = LEVEL_STREET_LIGHTS;
 Font font = { 0 };
 Music music = { 0 };
 Sound fxCoin = { 0 };
