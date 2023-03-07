@@ -22,6 +22,8 @@ typedef enum LevelArea {
     LEVEL_STREET_LIGHTS = 1,
 } LevelArea;
 
+#define LEVEL_COUNT 2
+
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)
 //----------------------------------------------------------------------------------

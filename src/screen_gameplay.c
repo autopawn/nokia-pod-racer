@@ -523,7 +523,7 @@ void DrawGameplayScreen(void)
 
         if (carrot_in_view && carrot_distance <= CARROT_IN_VIEW_DISTANCE)
         {
-            DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/3)%2, 0, carrot_v.x - 4, carrot_v.y - 4);
+            DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/2)%2, 0, carrot_v.x - 4, carrot_v.y - 4);
         }
         else
         {

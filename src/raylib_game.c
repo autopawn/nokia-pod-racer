@@ -268,15 +268,14 @@ static void UpdateDrawFrame(void)
             {
                 UpdateTitleScreen();
 
-                if (FinishTitleScreen() == 1) TransitionToScreen(GAMEPLAY);
-                else if (FinishTitleScreen() == 2) TransitionToScreen(GAMEPLAY);
+                if (FinishTitleScreen()) TransitionToScreen(OPTIONS);
 
             } break;
             case OPTIONS:
             {
                 UpdateOptionsScreen();
 
-                if (FinishOptionsScreen()) TransitionToScreen(TITLE);
+                if (FinishOptionsScreen()) TransitionToScreen(GAMEPLAY);
 
             } break;
             case GAMEPLAY:
@@ -295,7 +294,7 @@ static void UpdateDrawFrame(void)
                     if (lastGameComplete)
                         TransitionToScreen(TITLE);
                     else
-                        TransitionToScreen(GAMEPLAY);
+                        TransitionToScreen(OPTIONS);
                 }
 
             } break;
@@ -341,7 +340,7 @@ static void UpdateDrawFrame(void)
 
         if (pixelSeparation)
         {
-            Color line_color = ColorAlpha(SCREEN_COLOR_BG, 0.5);
+            Color line_color = ColorAlpha(SCREEN_COLOR_BG, 0.3);
 
             for (int y = 0; y <= SCREEN_H; ++y)
                 DrawLine(SCREEN_BORDER, SCREEN_BORDER + y*SCREEN_SCALE_MULT,

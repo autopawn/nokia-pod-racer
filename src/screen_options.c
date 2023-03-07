@@ -32,6 +32,12 @@
 static int framesCounter = 0;
 static int finishScreen = 0;
 
+static const char *levelNames[LEVEL_COUNT] =
+{
+    "Night city",
+    "Street lights",
+};
+
 //----------------------------------------------------------------------------------
 // Options Screen Functions Definition
 //----------------------------------------------------------------------------------
@@ -39,7 +45,6 @@ static int finishScreen = 0;
 // Options Screen Initialization logic
 void InitOptionsScreen(void)
 {
-    // TODO: Initialize OPTIONS screen variables here!
     framesCounter = 0;
     finishScreen = 0;
 }
@@ -47,19 +52,36 @@ void InitOptionsScreen(void)
 // Options Screen Update logic
 void UpdateOptionsScreen(void)
 {
-    // TODO: Update OPTIONS screen variables here!
+    if (IsKeyPressed(KEY_DOWN))
+        currentLevel = (currentLevel + 1) % LEVEL_COUNT;
+    if (IsKeyPressed(KEY_UP))
+        currentLevel = (currentLevel + LEVEL_COUNT - 1) % LEVEL_COUNT;
+
+    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z))
+        finishScreen = true;
 }
 
 // Options Screen Draw logic
 void DrawOptionsScreen(void)
 {
-    // TODO: Draw OPTIONS screen here!
+    DrawText("- Level select -", 1, 0, 8, SCREEN_COLOR_LIT);
+    for (int i = 0; i < LEVEL_COUNT; ++i)
+    {
+        if (i == currentLevel)
+        {
+            DrawRectangle(0, 10*(i + 1), SCREEN_W, 10, SCREEN_COLOR_LIT);
+            DrawText(levelNames[i], 1, 10*(i + 1), 8, SCREEN_COLOR_BG);
+        }
+        else
+        {
+            DrawText(levelNames[i], 1, 10*(i + 1), 8, SCREEN_COLOR_LIT);
+        }
+    }
 }
 
 // Options Screen Unload logic
 void UnloadOptionsScreen(void)
 {
-    // TODO: Unload OPTIONS screen variables here!
 }
 
 // Options Screen should finish?
