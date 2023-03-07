@@ -44,6 +44,8 @@ static const int TARGET_N_CARROTS = 5;
 const float PLAYER_RAD = 0.3;
 const float CARROT_RAD = 0.24;
 
+const float CARROT_IN_VIEW_DISTANCE = 30;
+
 const float LOD_DISTANCE = 30;
 
 //----------------------------------------------------------------------------------
@@ -508,26 +510,43 @@ void DrawGameplayScreen(void)
 
         // Carrot seeker
         float carrot_angle = CarrotAngle(level, &player);
+        float carrot_distance = CarrotDistance(level, &player);
 
-        const char *text;
+        // Get carrot position in the screen
+        Vector2 carrot_v = GetWorldToScreen(Vector3Add(level->carrot_pos, (Vector3){0, 0.1 + 2*CARROT_RAD, 0}), camera);
+        // Transform into render texture position
+        carrot_v.x -= SCREEN_BORDER;
+        carrot_v.y -= SCREEN_BORDER;
+        carrot_v.x /= SCREEN_SCALE_MULT;
+        carrot_v.y /= SCREEN_SCALE_MULT;
+        bool carrot_in_view = carrot_v.x > 0 && carrot_v.y > 0 && carrot_v.x < SCREEN_W && carrot_v.y < SCREEN_H;
 
-        text = "";
-        if (carrot_angle > 0.1)
-            text = "<";
-        if (carrot_angle > 0.2)
-            text = "<<";
-        if (carrot_angle > 0.4)
-            text = "<<<";
-        DrawTextOutline(1, 24, text);
+        if (carrot_in_view && carrot_distance <= CARROT_IN_VIEW_DISTANCE)
+        {
+            DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/3)%2, 0, carrot_v.x - 4, carrot_v.y - 4);
+        }
+        else
+        {
+            const char *text;
 
-        text = "";
-        if (carrot_angle < -0.1)
-            text = ">";
-        if (carrot_angle < -0.2)
-            text = ">>";
-        if (carrot_angle < -0.4)
-            text = ">>>";
-        DrawTextOutline(SCREEN_W - 4 * strlen(text), 24, text);
+            text = "";
+            if (carrot_angle > 0.1)
+                text = "<";
+            if (carrot_angle > 0.2)
+                text = "<<";
+            if (carrot_angle > 0.4)
+                text = "<<<";
+            DrawTextOutline(1, 24, text);
+
+            text = "";
+            if (carrot_angle < -0.1)
+                text = ">";
+            if (carrot_angle < -0.2)
+                text = ">>";
+            if (carrot_angle < -0.4)
+                text = ">>>";
+            DrawTextOutline(SCREEN_W - 4 * strlen(text), 24, text);
+        }
 
         char buffer[80];
         if (level->carrot_grab_anim)
@@ -540,12 +559,12 @@ void DrawGameplayScreen(void)
         else
         {
             // Time counter
-            int seconds = level->time_playing / 60;
+            int seconds = level->time_playing/60;
             sprintf(buffer, "%02d:%02d", seconds/60, seconds%60);
             DrawTextOutline(1, 0, buffer);
 
             // Distance to carrot
-            sprintf(buffer, "%dm", (int) roundf(CarrotDistance(level, &player)));
+            sprintf(buffer, "%dm", (int) roundf(carrot_distance));
             int w = MeasureText(buffer, UI_FONT_SIZE);
             DrawTextOutline(SCREEN_W - w - 1, 0, buffer);
         }
