@@ -21,9 +21,10 @@ typedef enum LevelArea {
     LEVEL_CITY = 0,
     LEVEL_FOREST = 1,
     LEVEL_LIGHTS = 2,
+    LEVEL_ICE = 3,
 } LevelArea;
 
-#define LEVEL_COUNT 3
+#define LEVEL_COUNT 4
 
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)

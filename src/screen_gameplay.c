@@ -77,12 +77,14 @@ typedef enum
     OBSTACLE_BUILDING,
     OBSTACLE_TREE,
     OBSTACLE_LAMP,
+    OBSTACLE_IGLOO,
 } ObstacleType;
 
 static const float OBSTACLE_RAD[] = {
     0.5,
     0.2,
     0.125,
+    1.0,
 };
 
 typedef struct
@@ -183,6 +185,8 @@ static Level *LevelGenerate()
                 obs.type = OBSTACLE_TREE;
             else if (currentLevel == LEVEL_LIGHTS)
                 obs.type = OBSTACLE_LAMP;
+            else if (currentLevel == LEVEL_ICE)
+                obs.type = OBSTACLE_IGLOO;
 
             if (obs.type == OBSTACLE_TREE)
             {
@@ -190,7 +194,7 @@ static Level *LevelGenerate()
                 obs.pos.y += (rand()%11 - 5)/7.0;
             }
 
-            if (!LevelCheckCollision(level, obs.pos, 0.2))
+            if (!LevelCheckCollision(level, obs.pos, 0.8 * OBSTACLE_RAD[currentLevel]))
                 break;
         }
 
@@ -244,7 +248,10 @@ static void UpdatePlayer(Level *level, Player *player)
 
         // Accelerate towards target velocity (not phyisically accurate at all)
         player->ang_spd = 0.9 * player->ang_spd + 0.1 * tgt_ang_spd;
-        player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
+        if (currentLevel == LEVEL_ICE)
+            player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.98), Vector3Scale(tgt_spd, 0.02));
+        else
+            player->pos_spd = Vector3Add(Vector3Scale(player->pos_spd, 0.9), Vector3Scale(tgt_spd, 0.1));
     }
 
     // Collide with floor
@@ -472,6 +479,10 @@ static void DrawObstacle(Obstacle obj, int id, bool detailed)
                 DrawCylinder(obj.pos, 4, 4, 0, 5, SCREEN_COLOR_BG);
             }
         break;
+        case OBSTACLE_IGLOO:
+            DrawBorderedCube((Vector3){obj.pos.x , 0.45, obj.pos.z}, 2, 0.9, 2, false);
+            DrawBorderedCube((Vector3){obj.pos.x , 1.0, obj.pos.z}, 1.8, 0.2, 1.8, false);
+        break;
     }
 }
 
@@ -505,8 +516,8 @@ void DrawGameplayScreen(void)
 
         for (int i = 0; i < level->objs_count; ++i)
         {
-            bool detailed = Vector3Distance(camera.position, level->objs[i].pos) <= LOD_DISTANCE;
-            DrawObstacle(level->objs[i], i, detailed);
+            float distance = Vector3Distance(camera.position, level->objs[i].pos);
+            DrawObstacle(level->objs[i], i, distance <= LOD_DISTANCE);
         }
 
         // Draw Carrot

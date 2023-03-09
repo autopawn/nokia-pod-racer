@@ -37,6 +37,7 @@ static const char *levelNames[LEVEL_COUNT] =
     "City",
     "Forest",
     "Lights",
+    "Ice",
 };
 
 //----------------------------------------------------------------------------------
