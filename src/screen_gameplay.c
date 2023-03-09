@@ -34,6 +34,7 @@
 #include <math.h>
 
 static const int MAP_SIZE = 500;
+static const int MAP_SIZE_FOREST = 300;
 static const int N_MAP_OBSTACLES = 4000;
 static const int PLAYER_DEATH_ANIMATION_TIME = 200;
 static const int PLAYER_CARROT_GRAB_ANIMATION_TIME = 60;
@@ -74,11 +75,13 @@ typedef struct
 typedef enum
 {
     OBSTACLE_BUILDING,
+    OBSTACLE_TREE,
     OBSTACLE_LAMP,
 } ObstacleType;
 
 static const float OBSTACLE_RAD[] = {
     0.5,
+    0.2,
     0.125,
 };
 
@@ -98,6 +101,8 @@ typedef struct
     int carrot_grab_anim;
 
     int time_playing;
+
+    int map_size;
 } Level;
 
 //----------------------------------------------------------------------------------
@@ -126,7 +131,7 @@ static bool LevelCheckCollision(const Level *level, Vector3 point, float rad)
 
 static void LevelRespawnCarrot(Level *level, const Player *player)
 {
-    assert(CARROT_SPAN_DIST < 0.9 * MAP_SIZE);
+    assert(CARROT_SPAN_DIST < 0.9 * level->map_size);
 
     while(1)
     {
@@ -135,7 +140,7 @@ static void LevelRespawnCarrot(Level *level, const Player *player)
         float pos_x = player->pos.x + CARROT_SPAN_DIST * cosf(angle);
         float pos_z = player->pos.z + CARROT_SPAN_DIST * sinf(angle);
 
-        if (0 < pos_x && pos_x < MAP_SIZE && 0 < pos_z && pos_z < MAP_SIZE)
+        if (0 < pos_x && pos_x < level->map_size && 0 < pos_z && pos_z < level->map_size)
         {
             level->carrot_pos = (Vector3){pos_x, 0, pos_z};
 
@@ -154,23 +159,36 @@ static Level *LevelGenerate()
     level->objs = MemAlloc(sizeof(*level->objs) * N_MAP_OBSTACLES);
     level->objs_count = 0;
 
+    level->map_size = MAP_SIZE;
+    if (currentLevel == LEVEL_FOREST)
+        level->map_size = MAP_SIZE_FOREST;
+
+
     for (int i = 0; i < N_MAP_OBSTACLES; ++i)
     {
         Obstacle obs = {0};
 
         while (1)
         {
-            int pos_x = rand()%MAP_SIZE;
-            int pos_z = rand()%MAP_SIZE;
+            int pos_x = rand()%level->map_size;
+            int pos_z = rand()%level->map_size;
 
             obs.pos.x = pos_x;
             obs.pos.y = 0;
             obs.pos.z = pos_z;
 
-            if (currentLevel == LEVEL_BULDING_ZONE)
+            if (currentLevel == LEVEL_CITY)
                 obs.type = OBSTACLE_BUILDING;
-            else if (currentLevel == LEVEL_STREET_LIGHTS)
+            if (currentLevel == LEVEL_FOREST)
+                obs.type = OBSTACLE_TREE;
+            else if (currentLevel == LEVEL_LIGHTS)
                 obs.type = OBSTACLE_LAMP;
+
+            if (obs.type == OBSTACLE_TREE)
+            {
+                obs.pos.x += (rand()%11 - 5)/7.0;
+                obs.pos.y += (rand()%11 - 5)/7.0;
+            }
 
             if (!LevelCheckCollision(level, obs.pos, 0.2))
                 break;
@@ -363,7 +381,7 @@ void InitGameplayScreen(void)
     level = LevelGenerate();
     memset(&player, 0, sizeof(player));
     player.pos.x = -10;
-    player.pos.z = MAP_SIZE/2.0;
+    player.pos.z = level->map_size/2.0;
     player.pos.y = 200;
 
     LevelRespawnCarrot(level, &player);
@@ -421,22 +439,26 @@ static void DrawBorderedCube(Vector3 position, float width, float height, float 
     DrawCube(position, width, height, length, inv? SCREEN_COLOR_LIT : SCREEN_COLOR_BG);
 
     BoundingBox box;
-    box.min.x = position.x - 0.5*width - 0.01;
-    box.max.x = position.x + 0.5*width + 0.01;
-    box.min.y = position.y - 0.5*height - 0.01;
-    box.max.y = position.y + 0.5*height + 0.01;
-    box.min.z = position.z - 0.5*length - 0.01;
-    box.max.z = position.z + 0.5*length + 0.01;
+    box.min.x = position.x - 0.5*width - 0.014;
+    box.max.x = position.x + 0.5*width + 0.014;
+    box.min.y = position.y - 0.5*height - 0.014;
+    box.max.y = position.y + 0.5*height + 0.014;
+    box.min.z = position.z - 0.5*length - 0.014;
+    box.max.z = position.z + 0.5*length + 0.014;
 
     DrawBoundingBox(box, inv? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
 }
 
-static void DrawObstacle(Obstacle obj, bool detailed)
+static void DrawObstacle(Obstacle obj, int id, bool detailed)
 {
     switch (obj.type)
     {
         case OBSTACLE_BUILDING:
             DrawBorderedCube((Vector3){obj.pos.x , 1, obj.pos.z}, 1, 2, 1, false);
+        break;
+        case OBSTACLE_TREE:
+            DrawBorderedCube((Vector3){obj.pos.x , 0.8, obj.pos.z}, 0.4, 1.6, 0.4, false);
+            DrawCube((Vector3){obj.pos.x , 1.4, obj.pos.z}, 1, 1.2 + 0.1 * (id % 4), 1, SCREEN_COLOR_LIT);
         break;
         case OBSTACLE_LAMP:
             DrawBorderedCube((Vector3){obj.pos.x , 0.8, obj.pos.z}, 0.25, 1.6, 0.25, false);
@@ -473,7 +495,7 @@ void DrawGameplayScreen(void)
     int background_x = (int) roundf(-player.ang / (2 * PI) * textureBackground.width);
     background_x = mod(background_x, textureBackground.width);
 
-    if (currentLevel == LEVEL_STREET_LIGHTS)
+    if (currentLevel == LEVEL_LIGHTS)
         ClearBackground(SCREEN_COLOR_LIT);
 
     DrawTexture(textureBackground, -background_x, 0, WHITE);
@@ -484,7 +506,7 @@ void DrawGameplayScreen(void)
         for (int i = 0; i < level->objs_count; ++i)
         {
             bool detailed = Vector3Distance(camera.position, level->objs[i].pos) <= LOD_DISTANCE;
-            DrawObstacle(level->objs[i], detailed);
+            DrawObstacle(level->objs[i], i, detailed);
         }
 
         // Draw Carrot

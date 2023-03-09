@@ -34,8 +34,9 @@ static int finishScreen = 0;
 
 static const char *levelNames[LEVEL_COUNT] =
 {
-    "Night city",
-    "Street lights",
+    "City",
+    "Forest",
+    "Lights",
 };
 
 //----------------------------------------------------------------------------------
@@ -64,7 +65,7 @@ void UpdateOptionsScreen(void)
 // Options Screen Draw logic
 void DrawOptionsScreen(void)
 {
-    DrawText("- Level select -", 1, 0, 8, SCREEN_COLOR_LIT);
+    DrawText("- Level Select -", 1, 0, 8, SCREEN_COLOR_LIT);
     for (int i = 0; i < LEVEL_COUNT; ++i)
     {
         if (i == currentLevel)

@@ -22,7 +22,7 @@
 // NOTE: Those variables are shared between modules through screens.h
 //----------------------------------------------------------------------------------
 GameScreen currentScreen = LOGO;
-LevelArea currentLevel = LEVEL_STREET_LIGHTS;
+LevelArea currentLevel = LEVEL_LIGHTS;
 Font font = { 0 };
 Music music = { 0 };
 Sound fxCoin = { 0 };
@@ -33,7 +33,7 @@ bool lastGameComplete = { 0 };
 // Local Variables Definition (local to this module)
 //----------------------------------------------------------------------------------
 static RenderTexture2D nokiaScreen;
-static bool pixelSeparation = false;
+static bool pixelSeparation = true;
 static const int screenWidth = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_W;
 static const int screenHeight = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_H;
 

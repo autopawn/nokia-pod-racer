@@ -18,11 +18,12 @@
 typedef enum GameScreen { UNKNOWN = -1, LOGO = 0, HAREMONIC, TITLE, OPTIONS, GAMEPLAY, ENDING } GameScreen;
 
 typedef enum LevelArea {
-    LEVEL_BULDING_ZONE = 0,
-    LEVEL_STREET_LIGHTS = 1,
+    LEVEL_CITY = 0,
+    LEVEL_FOREST = 1,
+    LEVEL_LIGHTS = 2,
 } LevelArea;
 
-#define LEVEL_COUNT 2
+#define LEVEL_COUNT 3
 
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)
