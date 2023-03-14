@@ -345,6 +345,34 @@ static void DrawTextOutline(int pos_x, int pos_y, const char *text)
     DrawText(text, pos_x, pos_y, UI_FONT_SIZE, SCREEN_COLOR_BG);
 }
 
+void DrawSnow(Camera3D camera, int framesCounter)
+{
+    const float SNOW_DISTANCE = 6.0f;
+    const float SNOW_STEP = 0.8f;
+
+    int cam_x = (int) camera.position.x;
+    int cam_z = (int) camera.position.z;
+
+    for (float x = cam_x - SNOW_DISTANCE; x <= cam_x + SNOW_DISTANCE; x += SNOW_STEP)
+    {
+        for (float z = cam_z - SNOW_DISTANCE; z <= cam_z + SNOW_DISTANCE; z += 0.866*SNOW_STEP)
+        {
+            float corr_x = fmodf(x + 1.61803398875*z, 0.6*SNOW_STEP) - 0.3*SNOW_STEP;
+            float corr_z = 0.5 + fmodf(3.1415*x + z, 0.5*SNOW_STEP) - 0.25*SNOW_STEP;
+            float fall_h = 4.0 + fmodf(3.42*x + 11.42*z, 2.0);
+            float pos_h = fall_h - fmodf(0.04*framesCounter + 100, fall_h);
+
+            float pos_x = x + corr_x;
+            float pos_z = z + corr_z;
+
+            if (absf(pos_x - cam_x) + absf(pos_z - cam_z) < 4)
+                DrawCube((Vector3){pos_x, pos_h, pos_z}, 0.1, 0.1, 0.1, SCREEN_COLOR_LIT);
+            else
+                DrawPoint3D((Vector3){pos_x, pos_h, pos_z}, SCREEN_COLOR_LIT);
+        }
+    }
+}
+
 float CarrotAngle(const Level *level, const Player *player)
 {
     float angle = atan2f(- (level->carrot_pos.z - player->pos.z), level->carrot_pos.x - player->pos.x);
@@ -402,6 +430,8 @@ void InitGameplayScreen(void)
 // Gameplay Screen Update logic
 void UpdateGameplayScreen(void)
 {
+    framesCounter++;
+
     UpdatePlayer(level, &player);
 
     if (player.time_death >= PLAYER_DEATH_ANIMATION_TIME)
@@ -523,6 +553,9 @@ void DrawGameplayScreen(void)
         // Draw Carrot
         DrawBorderedCube((Vector3){level->carrot_pos.x , 0.1 + CARROT_RAD, level->carrot_pos.z},
                 CARROT_RAD, CARROT_RAD, CARROT_RAD, true);
+
+        if (currentLevel == LEVEL_ICE)
+            DrawSnow(camera, framesCounter);
 
     EndMode3D();
 
