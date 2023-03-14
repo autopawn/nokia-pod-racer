@@ -47,7 +47,8 @@ const float CARROT_RAD = 0.24;
 
 const float CARROT_IN_VIEW_DISTANCE = 30;
 
-const float LOD_DISTANCE = 30;
+const float LOD_DISTANCE = 15;
+const float RENDER_DISTANCE = 45;
 
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
@@ -56,7 +57,7 @@ static int framesCounter = 0;
 static int finishScreen = 0;
 
 static Texture2D textureDriver;
-static Texture2D textureBackground;
+static Texture2D textureBackground[LEVEL_COUNT];
 
 static Sound fxBreak;
 static Sound fxGrab;
@@ -411,7 +412,10 @@ void InitGameplayScreen(void)
     finishScreen = 0;
 
     textureDriver = LoadTexture("resources/driver.png");
-    textureBackground = LoadTexture("resources/night_city.png");
+    textureBackground[0] = LoadTexture("resources/background0.png");
+    textureBackground[1] = LoadTexture("resources/background1.png");
+    textureBackground[2] = LoadTexture("resources/background2.png");
+    textureBackground[3] = LoadTexture("resources/background3.png");
 
     level = LevelGenerate();
     memset(&player, 0, sizeof(player));
@@ -510,8 +514,9 @@ static void DrawObstacle(Obstacle obj, int id, bool detailed)
             }
         break;
         case OBSTACLE_IGLOO:
-            DrawBorderedCube((Vector3){obj.pos.x , 0.45, obj.pos.z}, 2, 0.9, 2, false);
-            DrawBorderedCube((Vector3){obj.pos.x , 1.0, obj.pos.z}, 1.8, 0.2, 1.8, false);
+            DrawBorderedCube((Vector3){obj.pos.x , 0.75, obj.pos.z}, 2, 1.5, 2, false);
+            if (detailed)
+                DrawBorderedCube((Vector3){obj.pos.x , 1.6, obj.pos.z}, 1.8, 0.2, 1.8, false);
         break;
     }
 }
@@ -532,29 +537,32 @@ void DrawGameplayScreen(void)
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    Texture2D background = textureBackground[currentLevel];
 
-    int background_x = (int) roundf(-player.ang / (2 * PI) * textureBackground.width);
-    background_x = mod(background_x, textureBackground.width);
+    int background_x = (int) roundf(-player.ang / (2 * PI) * background.width);
+    background_x = mod(background_x, background.width);
 
     if (currentLevel == LEVEL_LIGHTS)
         ClearBackground(SCREEN_COLOR_LIT);
 
-    DrawTexture(textureBackground, -background_x, 0, WHITE);
-    DrawTexture(textureBackground, -background_x + textureBackground.width, 0, WHITE);
+    DrawTexture(background, -background_x, 0, WHITE);
+    DrawTexture(background, -background_x + background.width, 0, WHITE);
 
     BeginMode3D(camera);
 
         for (int i = 0; i < level->objs_count; ++i)
         {
             float distance = Vector3Distance(camera.position, level->objs[i].pos);
-            DrawObstacle(level->objs[i], i, distance <= LOD_DISTANCE);
+
+            if (level->time_playing == 0 || distance <= RENDER_DISTANCE)
+                DrawObstacle(level->objs[i], i, distance <= LOD_DISTANCE);
         }
 
         // Draw Carrot
         DrawBorderedCube((Vector3){level->carrot_pos.x , 0.1 + CARROT_RAD, level->carrot_pos.z},
                 CARROT_RAD, CARROT_RAD, CARROT_RAD, true);
 
-        if (currentLevel == LEVEL_ICE)
+        if (currentLevel == LEVEL_ICE && level->time_playing > 0)
             DrawSnow(camera, framesCounter);
 
     EndMode3D();
@@ -649,7 +657,8 @@ void DrawGameplayScreen(void)
 void UnloadGameplayScreen(void)
 {
     UnloadTexture(textureDriver);
-    UnloadTexture(textureBackground);
+    for (int i = 0; i < LEVEL_COUNT; ++i)
+        UnloadTexture(textureBackground[i]);
 
     UnloadLevel(level);
 
