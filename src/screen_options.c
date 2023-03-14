@@ -66,17 +66,17 @@ void UpdateOptionsScreen(void)
 // Options Screen Draw logic
 void DrawOptionsScreen(void)
 {
-    DrawText("- Level Select -", 1, 0, 8, SCREEN_COLOR_LIT);
+    DrawText("- Level Select -", 0, -1, 8, SCREEN_COLOR_LIT);
     for (int i = 0; i < LEVEL_COUNT; ++i)
     {
         if (i == currentLevel)
         {
-            DrawRectangle(0, 10*(i + 1), SCREEN_W, 10, SCREEN_COLOR_LIT);
-            DrawText(levelNames[i], 1, 10*(i + 1), 8, SCREEN_COLOR_BG);
+            DrawRectangle(0, 10*i + 8, SCREEN_W, 10, SCREEN_COLOR_LIT);
+            DrawText(levelNames[i], 1, 10*i + 8, 8, SCREEN_COLOR_BG);
         }
         else
         {
-            DrawText(levelNames[i], 1, 10*(i + 1), 8, SCREEN_COLOR_LIT);
+            DrawText(levelNames[i], 1, 10*i + 8, 8, SCREEN_COLOR_LIT);
         }
     }
 }
