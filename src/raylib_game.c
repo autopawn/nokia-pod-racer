@@ -21,6 +21,7 @@
 // Shared Variables Definition (global)
 // NOTE: Those variables are shared between modules through screens.h
 //----------------------------------------------------------------------------------
+GamePersistentData persistentData = {0};
 GameScreen currentScreen = LOGO;
 LevelArea currentLevel = LEVEL_LIGHTS;
 Font font = { 0 };
@@ -282,7 +283,16 @@ static void UpdateDrawFrame(void)
             {
                 UpdateGameplayScreen();
 
-                if (FinishGameplayScreen()) TransitionToScreen(ENDING);
+                if (FinishGameplayScreen())
+                {
+                    TransitionToScreen(ENDING);
+
+                    // #ifndef PLATFORM_WEB
+                    //     return LoadFileData(PROGRESS_SAVE_FILE_ROUTE, bytes_read);
+                    // #else
+                    //     return loadGameFromIndexedDB(bytes_read);
+                    // #endif
+                }
 
             } break;
             case ENDING:

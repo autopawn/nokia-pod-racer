@@ -7,8 +7,10 @@
 static int framesCounter = 0;
 static int finishScreen = 0;
 static const int DURATION = 100;
+static const int TADA_START = 15;
 
 static Texture2D haremonicLogo;
+static Sound tadaSound;
 
 //----------------------------------------------------------------------------------
 // Haremonic Screen Functions Definition
@@ -21,6 +23,7 @@ void InitHaremonicScreen(void)
     framesCounter = 0;
 
     haremonicLogo = LoadTexture("resources/logo_haremonic.png");
+    tadaSound = LoadSound("resources/tada.mp3");
 }
 
 // Haremonic Screen Update logic
@@ -30,6 +33,8 @@ void UpdateHaremonicScreen(void)
 
     if (framesCounter >= DURATION)
         finishScreen = true;
+    if (framesCounter == TADA_START)
+        PlaySound(tadaSound);
 }
 
 // Haremonic Screen Draw logic
@@ -52,6 +57,7 @@ void DrawHaremonicScreen(void)
 void UnloadHaremonicScreen(void)
 {
     UnloadTexture(haremonicLogo);
+    UnloadSound(tadaSound);
 }
 
 // Haremonic Screen should finish?

@@ -26,6 +26,8 @@
 #include "raylib.h"
 #include "screens.h"
 
+#include <stdio.h>
+
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
 //----------------------------------------------------------------------------------
@@ -77,6 +79,15 @@ void DrawOptionsScreen(void)
         else
         {
             DrawText(levelNames[i], 1, 10*i + 8, 8, SCREEN_COLOR_LIT);
+        }
+
+        if (persistentData.time[i] != 0)
+        {
+            char buffer[200];
+
+            sprintf(buffer, "%02d:%02d", persistentData.time[i]/60, persistentData.time[i]%60);
+            int w = MeasureText(buffer, 8);
+            DrawText(buffer, SCREEN_W - w - 1, 10*i + 8, 8, i == currentLevel ? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
         }
     }
 }

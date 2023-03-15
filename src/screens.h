@@ -26,9 +26,14 @@ typedef enum LevelArea {
 
 #define LEVEL_COUNT 4
 
+typedef struct {
+    int time[LEVEL_COUNT];
+} GamePersistentData;
+
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)
 //----------------------------------------------------------------------------------
+extern GamePersistentData persistentData;
 extern GameScreen currentScreen;
 extern LevelArea currentLevel;
 extern Font font;

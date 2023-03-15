@@ -35,6 +35,8 @@
 //----------------------------------------------------------------------------------
 static int framesCounter = 0;
 static int finishScreen = 0;
+static bool newRecord = false;
+static Sound niceSound;
 
 //----------------------------------------------------------------------------------
 // Ending Screen Functions Definition
@@ -43,14 +45,28 @@ static int finishScreen = 0;
 // Ending Screen Initialization logic
 void InitEndingScreen(void)
 {
-    // TODO: Initialize ENDING screen variables here!
     framesCounter = 0;
     finishScreen = 0;
+    newRecord = false;
+
+    niceSound = LoadSound("resources/nice.mp3");
+
+    /* Update persistent game data */
+    if (lastGameComplete && (persistentData.time[currentLevel] == 0 || lastGameTime < persistentData.time[currentLevel]))
+    {
+        persistentData.time[currentLevel] = lastGameTime;
+        newRecord = true;
+        PlaySound(niceSound);
+
+        /* TODO: Save persisent game data. */
+    }
 }
 
 // Ending Screen Update logic
 void UpdateEndingScreen(void)
 {
+    framesCounter++;
+
     if (GetKeyPressed())
     {
         finishScreen = 1;
@@ -72,7 +88,7 @@ void DrawEndingScreen(void)
     {
         sprintf(buffer, "You crashed!");
         w = MeasureText(buffer, font_size);
-        DrawText(buffer, SCREEN_W/2 - w/2, 18, font_size, SCREEN_COLOR_LIT);
+        DrawText(buffer, SCREEN_W/2 - w/2, 20, font_size, SCREEN_COLOR_LIT);
     }
     else
     {
@@ -82,14 +98,21 @@ void DrawEndingScreen(void)
 
         sprintf(buffer, "Time: %02d:%02d", lastGameTime/60, lastGameTime%60);
         w = MeasureText(buffer, font_size);
-        DrawText(buffer, SCREEN_W/2 - w/2, 28, font_size, SCREEN_COLOR_LIT);
+        DrawText(buffer, SCREEN_W/2 - w/2, 20, font_size, SCREEN_COLOR_LIT);
+
+        if (newRecord && (framesCounter/15)%2)
+        {
+            sprintf(buffer, "New record!");
+            w = MeasureText(buffer, font_size);
+            DrawText(buffer, SCREEN_W/2 - w/2, 32, font_size, SCREEN_COLOR_LIT);
+        }
     }
 }
 
 // Ending Screen Unload logic
 void UnloadEndingScreen(void)
 {
-    // TODO: Unload ENDING screen variables here!
+    UnloadSound(niceSound);
 }
 
 // Ending Screen should finish?
