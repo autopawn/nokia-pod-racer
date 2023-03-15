@@ -12,6 +12,7 @@
 
 #include "raylib.h"
 #include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
+#include "web.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -23,7 +24,7 @@
 //----------------------------------------------------------------------------------
 GamePersistentData persistentData = {0};
 GameScreen currentScreen = LOGO;
-LevelArea currentLevel = LEVEL_LIGHTS;
+LevelArea currentLevel = LEVEL_CITY;
 Font font = { 0 };
 Music music = { 0 };
 Sound fxCoin = { 0 };
@@ -57,6 +58,37 @@ static void DrawTransition(void);           // Draw transition effect (full-scre
 
 static void UpdateDrawFrame(void);          // Update and draw one frame
 
+
+//----------------------------------------------------------------------------------
+// Save and load game
+//----------------------------------------------------------------------------------
+bool SaveGame(void)
+{
+    #ifndef PLATFORM_WEB
+        return SaveFileData("savegame.dat", (void *) &persistentData, sizeof(persistentData));
+    #else
+        return saveGameToIndexedDB((void*)&persistentData, sizeof(persistentData));
+    #endif
+}
+
+bool LoadGame(void)
+{
+    unsigned int bytesRead;
+    void *data;
+
+    #ifndef PLATFORM_WEB
+        data = LoadFileData("savegame.dat", &bytesRead);
+    #else
+        data = loadGameFromIndexedDB(&bytesRead);
+    #endif
+
+    if (data)
+        persistentData = *(GamePersistentData *)data;
+
+    return bytesRead;
+}
+
+
 //----------------------------------------------------------------------------------
 // Main entry point
 //----------------------------------------------------------------------------------
@@ -81,11 +113,14 @@ int main(void)
     currentScreen = LOGO;
     InitLogoScreen();
 
+    LoadGame();
+
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
 #else
     SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
+
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key

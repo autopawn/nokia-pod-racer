@@ -38,8 +38,8 @@ static const int MAP_SIZE_FOREST = 300;
 static const int N_MAP_OBSTACLES = 4000;
 static const int PLAYER_DEATH_ANIMATION_TIME = 200;
 static const int PLAYER_CARROT_GRAB_ANIMATION_TIME = 60;
-static const float CARROT_SPAN_DIST = 200;
 static const int UI_FONT_SIZE = 8;
+static const float CARROT_SPAN_DIST = 200;
 static const int TARGET_N_CARROTS = 5;
 
 const float PLAYER_RAD = 0.3;

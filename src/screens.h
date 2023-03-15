@@ -30,6 +30,8 @@ typedef struct {
     int time[LEVEL_COUNT];
 } GamePersistentData;
 
+bool SaveGame(void);
+bool LoadGame(void);
 //----------------------------------------------------------------------------------
 // Global Variables Declaration (shared by several modules)
 //----------------------------------------------------------------------------------

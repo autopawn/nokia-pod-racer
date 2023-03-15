@@ -200,7 +200,7 @@ endif
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -Wno-unused-value    ignore unused return values of some functions (i.e. fread())
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS = -std=c99 -Wall -Wno-missing-braces -Wunused-result -D_DEFAULT_SOURCE
+CFLAGS = -std=gnu17 -Wall -Wno-missing-braces -Wunused-result -D_DEFAULT_SOURCE
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
@@ -212,6 +212,7 @@ else
             CFLAGS += -Os
         endif
 		CFLAGS += -s MINIFY_HTML=0
+		CFLAGS += -flto
     else
         CFLAGS += -s -O2
     endif
@@ -296,11 +297,9 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     # --preload-file resources   # specify a resources folder for data compilation
     # --source-map-base          # allow debugging in browser with source map
     LDFLAGS += -s USE_GLFW=3 -s TOTAL_MEMORY=$(BUILD_WEB_HEAP_SIZE) -s FORCE_FILESYSTEM=1
-
-    # Build using asyncify
-    ifeq ($(BUILD_WEB_ASYNCIFY),TRUE)
-        LDFLAGS += -s ASYNCIFY
-    endif
+	LDFLAGS += -lidbfs.js
+	LDFLAGS += -s EXPORTED_RUNTIME_METHODS=['writeArrayToMemory','setValue']
+	LDFLAGS += -s ASYNCIFY
 
     # Add resources building if required
     ifeq ($(BUILD_WEB_RESOURCES),TRUE)
@@ -391,7 +390,8 @@ PROJECT_SOURCE_FILES ?= \
     screen_title.c \
     screen_options.c \
     screen_gameplay.c \
-    screen_ending.c
+    screen_ending.c \
+    web.c
 
 # Define all object files from source files
 OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
@@ -426,15 +426,15 @@ $(PROJECT_NAME): $(OBJS)
 clean:
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),WINDOWS)
-		del *.o *.exe /s
+		del *.o *.exe *.dat /s
     endif
     ifeq ($(PLATFORM_OS),LINUX)
 		find . -type f -executable -delete
-		rm -fv *.o
+		rm -fv *.o *.dat
     endif
     ifeq ($(PLATFORM_OS),OSX)
 		find . -type f -perm +ugo+x -delete
-		rm -f *.o
+		rm -f *.o *.dat
     endif
 endif
 ifeq ($(PLATFORM),PLATFORM_RPI)

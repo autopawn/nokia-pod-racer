@@ -58,7 +58,7 @@ void InitEndingScreen(void)
         newRecord = true;
         PlaySound(niceSound);
 
-        /* TODO: Save persisent game data. */
+        SaveGame();
     }
 }
 
