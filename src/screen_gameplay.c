@@ -490,8 +490,14 @@ static void DrawBorderedCube(Vector3 position, float width, float height, float 
     DrawBoundingBox(box, inv? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
 }
 
-static void DrawObstacle(Obstacle obj, int id, bool detailed)
+static void DrawObstacle(Obstacle obj, int id, int level_of_detail)
 {
+    if (level_of_detail == 0)
+    {
+        DrawPoint3D((Vector3){obj.pos.x , 1, obj.pos.z}, obj.type == OBSTACLE_LAMP ? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
+        return;
+    }
+
     switch (obj.type)
     {
         case OBSTACLE_BUILDING:
@@ -503,7 +509,7 @@ static void DrawObstacle(Obstacle obj, int id, bool detailed)
         break;
         case OBSTACLE_LAMP:
             DrawBorderedCube((Vector3){obj.pos.x , 0.8, obj.pos.z}, 0.25, 1.6, 0.25, false);
-            if (detailed)
+            if (level_of_detail >= 2)
             {
                 DrawBorderedCube((Vector3){obj.pos.x , 1.3, obj.pos.z}, 0.8, 0.2, 0.8, false);
                 DrawCylinder(obj.pos, 4, 4, 0, 15, SCREEN_COLOR_BG);
@@ -515,7 +521,7 @@ static void DrawObstacle(Obstacle obj, int id, bool detailed)
         break;
         case OBSTACLE_IGLOO:
             DrawBorderedCube((Vector3){obj.pos.x , 0.75, obj.pos.z}, 2, 1.5, 2, false);
-            if (detailed)
+            if (level_of_detail >= 2)
                 DrawBorderedCube((Vector3){obj.pos.x , 1.6, obj.pos.z}, 1.8, 0.2, 1.8, false);
         break;
     }
@@ -555,7 +561,7 @@ void DrawGameplayScreen(void)
             float distance = Vector3Distance(camera.position, level->objs[i].pos);
 
             if (level->time_playing == 0 || distance <= RENDER_DISTANCE)
-                DrawObstacle(level->objs[i], i, distance <= LOD_DISTANCE);
+                DrawObstacle(level->objs[i], i, (distance <= LOD_DISTANCE) + (distance <= RENDER_DISTANCE));
         }
 
         // Draw Carrot
@@ -567,7 +573,7 @@ void DrawGameplayScreen(void)
 
     EndMode3D();
 
-    if (!player.time_death)
+    if (!player.time_death && level->n_carrots < TARGET_N_CARROTS)
     {
         // Draw player
         DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
