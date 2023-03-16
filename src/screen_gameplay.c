@@ -600,7 +600,6 @@ void DrawGameplayScreen(void)
             DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
         }
 
-
         if (level->n_carrots < TARGET_N_CARROTS)
         {
             // Carrot seeker
