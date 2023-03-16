@@ -30,6 +30,7 @@ Music music = { 0 };
 Sound fxCoin = { 0 };
 int lastGameTime = { 0 };
 bool lastGameComplete = { 0 };
+bool isMusicOn = true;
 
 //----------------------------------------------------------------------------------
 // Local Variables Definition (local to this module)
@@ -283,6 +284,12 @@ static void UpdateDrawFrame(void)
         // Toggle pixel separation
         if (IsKeyPressed(KEY_P))
             pixelSeparation = !pixelSeparation;
+        // Toggle music
+        if (IsKeyPressed(KEY_O))
+        {
+            PlaySound(fxCoin);
+            isMusicOn = !isMusicOn;
+        }
 
         switch(currentScreen)
         {

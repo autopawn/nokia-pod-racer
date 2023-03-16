@@ -43,6 +43,7 @@ extern Music music;
 extern Sound fxCoin;
 extern int lastGameTime;
 extern bool lastGameComplete;
+extern bool isMusicOn;
 
 #ifdef __cplusplus
 extern "C" {            // Prevents name mangling of functions

@@ -442,6 +442,9 @@ void InitGameplayScreen(void)
 // Gameplay Screen Update logic
 void UpdateGameplayScreen(void)
 {
+    // Set music volume depending on whether it is on or not
+    SetMusicVolume(music, isMusicOn);
+
     framesCounter++;
 
     UpdatePlayer(level, &player);
