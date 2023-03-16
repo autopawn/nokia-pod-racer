@@ -429,7 +429,7 @@ void InitGameplayScreen(void)
     memset(&player, 0, sizeof(player));
     player.pos.x = -10;
     player.pos.z = level->map_size/2.0;
-    player.pos.y = 200;
+    player.pos.y = 100;
 
     LevelRespawnCarrot(level, &player);
 
@@ -491,24 +491,18 @@ static void DrawBorderedCube(Vector3 position, float width, float height, float 
     DrawCube(position, width, height, length, inv? SCREEN_COLOR_LIT : SCREEN_COLOR_BG);
 
     BoundingBox box;
-    box.min.x = position.x - 0.5*width - 0.014;
-    box.max.x = position.x + 0.5*width + 0.014;
-    box.min.y = position.y - 0.5*height - 0.014;
-    box.max.y = position.y + 0.5*height + 0.014;
-    box.min.z = position.z - 0.5*length - 0.014;
-    box.max.z = position.z + 0.5*length + 0.014;
+    box.min.x = position.x - 0.5*width - 0.017;
+    box.max.x = position.x + 0.5*width + 0.017;
+    box.min.y = position.y - 0.5*height - 0.017;
+    box.max.y = position.y + 0.5*height + 0.017;
+    box.min.z = position.z - 0.5*length - 0.017;
+    box.max.z = position.z + 0.5*length + 0.017;
 
     DrawBoundingBox(box, inv? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
 }
 
-static void DrawObstacle(Obstacle obj, int id, int level_of_detail)
+static void DrawObstacle(Obstacle obj, int id, bool detailed)
 {
-    if (level_of_detail == 0)
-    {
-        DrawPoint3D((Vector3){obj.pos.x , 1, obj.pos.z}, obj.type == OBSTACLE_LAMP ? SCREEN_COLOR_BG : SCREEN_COLOR_LIT);
-        return;
-    }
-
     switch (obj.type)
     {
         case OBSTACLE_BUILDING:
@@ -520,7 +514,7 @@ static void DrawObstacle(Obstacle obj, int id, int level_of_detail)
         break;
         case OBSTACLE_LAMP:
             DrawBorderedCube((Vector3){obj.pos.x , 0.8, obj.pos.z}, 0.25, 1.6, 0.25, false);
-            if (level_of_detail >= 2)
+            if (detailed)
             {
                 DrawBorderedCube((Vector3){obj.pos.x , 1.3, obj.pos.z}, 0.8, 0.2, 0.8, false);
                 DrawCylinder(obj.pos, 4, 4, 0, 15, SCREEN_COLOR_BG);
@@ -532,7 +526,7 @@ static void DrawObstacle(Obstacle obj, int id, int level_of_detail)
         break;
         case OBSTACLE_IGLOO:
             DrawBorderedCube((Vector3){obj.pos.x , 0.75, obj.pos.z}, 2, 1.5, 2, false);
-            if (level_of_detail >= 2)
+            if (detailed)
                 DrawBorderedCube((Vector3){obj.pos.x , 1.6, obj.pos.z}, 1.8, 0.2, 1.8, false);
         break;
     }
@@ -571,8 +565,15 @@ void DrawGameplayScreen(void)
         {
             float distance = Vector3Distance(camera.position, level->objs[i].pos);
 
-            if (level->time_playing == 0 || distance <= RENDER_DISTANCE)
-                DrawObstacle(level->objs[i], i, (distance <= LOD_DISTANCE) + (distance <= RENDER_DISTANCE));
+            if (level->time_playing == 0)
+            {
+                DrawObstacle(level->objs[i], i, distance <= RENDER_DISTANCE);
+            }
+            else
+            {
+                if (distance <= RENDER_DISTANCE)
+                    DrawObstacle(level->objs[i], i, distance <= LOD_DISTANCE);
+            }
         }
 
         // Draw Carrot
@@ -584,7 +585,7 @@ void DrawGameplayScreen(void)
 
     EndMode3D();
 
-    if (!player.time_death && level->n_carrots < TARGET_N_CARROTS)
+    if (!player.time_death)
     {
         // Draw player
         DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
@@ -599,65 +600,69 @@ void DrawGameplayScreen(void)
             DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
         }
 
-        // Carrot seeker
-        float carrot_angle = CarrotAngle(level, &player);
-        float carrot_distance = CarrotDistance(level, &player);
 
-        // Get carrot position in the screen
-        Vector2 carrot_v = GetWorldToScreen(Vector3Add(level->carrot_pos, (Vector3){0, 0.1 + 2*CARROT_RAD, 0}), camera);
-        // Transform into render texture position
-        carrot_v.x -= SCREEN_BORDER;
-        carrot_v.y -= SCREEN_BORDER;
-        carrot_v.x /= SCREEN_SCALE_MULT;
-        carrot_v.y /= SCREEN_SCALE_MULT;
-        bool carrot_in_view = carrot_v.x > 0 && carrot_v.y > 0 && carrot_v.x < SCREEN_W && carrot_v.y < SCREEN_H;
-
-        if (carrot_in_view && carrot_distance <= CARROT_IN_VIEW_DISTANCE)
+        if (level->n_carrots < TARGET_N_CARROTS)
         {
-            DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/2)%2, 0, carrot_v.x - 4, carrot_v.y - 4);
-        }
-        else
-        {
-            const char *text;
+            // Carrot seeker
+            float carrot_angle = CarrotAngle(level, &player);
+            float carrot_distance = CarrotDistance(level, &player);
 
-            text = "";
-            if (carrot_angle > 0.1)
-                text = "<";
-            if (carrot_angle > 0.2)
-                text = "<<";
-            if (carrot_angle > 0.4)
-                text = "<<<";
-            DrawTextOutline(1, 24, text);
+            // Get carrot position in the screen
+            Vector2 carrot_v = GetWorldToScreen(Vector3Add(level->carrot_pos, (Vector3){0, 0.1 + 2*CARROT_RAD, 0}), camera);
+            // Transform into render texture position
+            carrot_v.x -= SCREEN_BORDER;
+            carrot_v.y -= SCREEN_BORDER;
+            carrot_v.x /= SCREEN_SCALE_MULT;
+            carrot_v.y /= SCREEN_SCALE_MULT;
+            bool carrot_in_view = carrot_v.x > 0 && carrot_v.y > 0 && carrot_v.x < SCREEN_W && carrot_v.y < SCREEN_H;
 
-            text = "";
-            if (carrot_angle < -0.1)
-                text = ">";
-            if (carrot_angle < -0.2)
-                text = ">>";
-            if (carrot_angle < -0.4)
-                text = ">>>";
-            DrawTextOutline(SCREEN_W - 4 * strlen(text), 24, text);
-        }
+            if (carrot_in_view && carrot_distance <= CARROT_IN_VIEW_DISTANCE)
+            {
+                DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/2)%2, 0, carrot_v.x - 4, carrot_v.y - 4);
+            }
+            else
+            {
+                const char *text;
 
-        char buffer[80];
-        if (level->carrot_grab_anim)
-        {
-            // Total carrots collected
-            sprintf(buffer, "%d/%d", level->n_carrots, TARGET_N_CARROTS);
-            int w = MeasureText(buffer, UI_FONT_SIZE);
-            DrawTextOutline(SCREEN_W/2 - w/2, 0, buffer);
-        }
-        else
-        {
-            // Time counter
-            int seconds = level->time_playing/60;
-            sprintf(buffer, "%02d:%02d", seconds/60, seconds%60);
-            DrawTextOutline(1, 0, buffer);
+                text = "";
+                if (carrot_angle > 0.1)
+                    text = "<";
+                if (carrot_angle > 0.2)
+                    text = "<<";
+                if (carrot_angle > 0.4)
+                    text = "<<<";
+                DrawTextOutline(1, 24, text);
 
-            // Distance to carrot
-            sprintf(buffer, "%dm", (int) roundf(carrot_distance));
-            int w = MeasureText(buffer, UI_FONT_SIZE);
-            DrawTextOutline(SCREEN_W - w - 1, 0, buffer);
+                text = "";
+                if (carrot_angle < -0.1)
+                    text = ">";
+                if (carrot_angle < -0.2)
+                    text = ">>";
+                if (carrot_angle < -0.4)
+                    text = ">>>";
+                DrawTextOutline(SCREEN_W - 4 * strlen(text), 24, text);
+            }
+
+            char buffer[80];
+            if (level->carrot_grab_anim)
+            {
+                // Total carrots collected
+                sprintf(buffer, "%d/%d", level->n_carrots, TARGET_N_CARROTS);
+                int w = MeasureText(buffer, UI_FONT_SIZE);
+                DrawTextOutline(SCREEN_W/2 - w/2, 0, buffer);
+            }
+            else
+            {
+                // Time counter
+                int seconds = level->time_playing/60;
+                sprintf(buffer, "%02d:%02d", seconds/60, seconds%60);
+                DrawTextOutline(1, 0, buffer);
+
+                // Distance to carrot
+                sprintf(buffer, "%dm", (int) roundf(carrot_distance));
+                int w = MeasureText(buffer, UI_FONT_SIZE);
+                DrawTextOutline(SCREEN_W - w - 1, 0, buffer);
+            }
         }
     }
     else
