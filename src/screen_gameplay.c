@@ -39,7 +39,7 @@ static const int N_MAP_OBSTACLES = 4000;
 static const int PLAYER_DEATH_ANIMATION_TIME = 200;
 static const int PLAYER_CARROT_GRAB_ANIMATION_TIME = 60;
 static const int UI_FONT_SIZE = 8;
-static const float CARROT_SPAN_DIST = 200;
+static const int CARROT_SPAN_DIST = 200;
 static const int TARGET_N_CARROTS = 5;
 
 const float PLAYER_RAD = 0.3;
@@ -134,14 +134,21 @@ static bool LevelCheckCollision(const Level *level, Vector3 point, float rad)
 
 static void LevelRespawnCarrot(Level *level, const Player *player)
 {
+    const int REGULAR_ATTEMTPS = 10000;
+
+    int attempts = 0;
     assert(CARROT_SPAN_DIST < 0.9 * level->map_size);
 
     while(1)
     {
         float angle = 2*PI*(rand() % 30000)/30000.0f;
+        float distance = CARROT_SPAN_DIST;
 
-        float pos_x = player->pos.x + CARROT_SPAN_DIST * cosf(angle);
-        float pos_z = player->pos.z + CARROT_SPAN_DIST * sinf(angle);
+        if (attempts > REGULAR_ATTEMTPS)
+            distance = CARROT_SPAN_DIST + ((attempts - REGULAR_ATTEMTPS)/10)%CARROT_SPAN_DIST;
+
+        float pos_x = player->pos.x + distance * cosf(angle);
+        float pos_z = player->pos.z + distance * sinf(angle);
 
         if (0 < pos_x && pos_x < level->map_size && 0 < pos_z && pos_z < level->map_size)
         {
@@ -150,6 +157,7 @@ static void LevelRespawnCarrot(Level *level, const Player *player)
             if (!LevelCheckCollision(level, level->carrot_pos, 2))
                 break;
         }
+        attempts++;
     }
     level->carrot_grab_anim = 0;
 }
