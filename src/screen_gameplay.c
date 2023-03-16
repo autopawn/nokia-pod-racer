@@ -614,7 +614,7 @@ void DrawGameplayScreen(void)
             carrot_v.y -= SCREEN_BORDER;
             carrot_v.x /= SCREEN_SCALE_MULT;
             carrot_v.y /= SCREEN_SCALE_MULT;
-            bool carrot_in_view = carrot_v.x > 0 && carrot_v.y > 0 && carrot_v.x < SCREEN_W && carrot_v.y < SCREEN_H;
+            bool carrot_in_view = -0.3*PI < carrot_angle && carrot_angle < 0.3*PI;
 
             if (carrot_in_view && carrot_distance <= CARROT_IN_VIEW_DISTANCE)
             {
