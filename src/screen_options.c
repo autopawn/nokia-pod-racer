@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------------
 static int framesCounter = 0;
 static int finishScreen = 0;
+static int lastJoyMovementFrame = 0;
 
 static const char *levelNames[LEVEL_COUNT] =
 {
@@ -51,11 +52,28 @@ void InitOptionsScreen(void)
 {
     framesCounter = 0;
     finishScreen = 0;
+    lastJoyMovementFrame = -10;
 }
 
 // Options Screen Update logic
 void UpdateOptionsScreen(void)
 {
+    framesCounter++;
+
+    if (lastJoyMovementFrame + 10 <= framesCounter)
+    {
+        if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) > 0.5)
+        {
+            currentLevel = (currentLevel + 1) % LEVEL_COUNT;
+            lastJoyMovementFrame = framesCounter;
+        }
+        if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) < -0.5)
+        {
+            currentLevel = (currentLevel + LEVEL_COUNT - 1) % LEVEL_COUNT;
+            lastJoyMovementFrame = framesCounter;
+        }
+    }
+
     if (IsKeyPressed(KEY_DOWN) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))
         currentLevel = (currentLevel + 1) % LEVEL_COUNT;
     if (IsKeyPressed(KEY_UP) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP))

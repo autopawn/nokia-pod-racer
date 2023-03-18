@@ -257,10 +257,10 @@ static void UpdatePlayer(Level *level, Player *player)
             player->turbo_r = 0;
 
 
-        if (IsGamepadAvailable(0))
+        if (IsGamepadAvailable(0) && triggerLeftAxis != -1 && triggerRightAxis != -1)
         {
-            float turbo_l = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_TRIGGER) + 1.0f;
-            float turbo_r = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) + 1.0f;
+            float turbo_l = GetGamepadAxisMovement(0, triggerLeftAxis) + 1.0f;
+            float turbo_r = GetGamepadAxisMovement(0, triggerRightAxis) + 1.0f;
 
             if (player->turbo_l < turbo_l)
                 player->turbo_l = turbo_l;

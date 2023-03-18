@@ -10,6 +10,8 @@
 *
 ********************************************************************************************/
 
+#include <stdio.h>
+
 #include "raylib.h"
 #include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
 #include "web.h"
@@ -47,6 +49,8 @@ static bool onTransition = false;
 static bool transFadeOut = false;
 static int transFromScreen = -1;
 static GameScreen transToScreen = UNKNOWN;
+int triggerLeftAxis = -1, triggerRightAxis = -1;
+bool triggerAxisDetected = false;
 
 //----------------------------------------------------------------------------------
 // Local Functions Declaration
@@ -89,6 +93,52 @@ bool LoadGame(void)
     return bytesRead;
 }
 
+static inline bool hareDetectTriggerAxis()
+{
+    triggerLeftAxis = -1;
+    triggerRightAxis = -1;
+    triggerAxisDetected = false;
+
+    if (IsGamepadAvailable(0))
+    {
+        if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_TRIGGER) < -0.5)
+            triggerLeftAxis = GAMEPAD_AXIS_LEFT_TRIGGER;
+        if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) < -0.5)
+            triggerRightAxis = GAMEPAD_AXIS_RIGHT_TRIGGER;
+
+        if (triggerLeftAxis == -1)
+        {
+            for (int i = 0; i < GetGamepadAxisCount(0); ++i)
+            {
+                if (i != triggerRightAxis && GetGamepadAxisMovement(0, i) < -0.5)
+                {
+                    triggerLeftAxis = i;
+                    break;
+                }
+            }
+        }
+
+        if (triggerRightAxis == -1)
+        {
+            for (int i = 0; i < GetGamepadAxisCount(0); ++i)
+            {
+                if (i != triggerLeftAxis && GetGamepadAxisMovement(0, i) < -0.5)
+                {
+                    triggerRightAxis = i;
+                    break;
+                }
+            }
+        }
+
+        if (triggerLeftAxis == -1 || triggerRightAxis == -1)
+            return false;
+
+        fprintf(stderr, "JOYSTICK: Detected triggers: %d %d\n", triggerLeftAxis, triggerRightAxis);
+        triggerAxisDetected = true;
+        return true;
+    }
+    return false;
+}
 
 //----------------------------------------------------------------------------------
 // Main entry point
@@ -277,6 +327,9 @@ static void UpdateDrawFrame(void)
 {
     // Update
     //----------------------------------------------------------------------------------
+    if (!triggerAxisDetected)
+        hareDetectTriggerAxis();
+
     UpdateMusicStream(music);       // NOTE: Music keeps playing between screens
 
     if (!onTransition)

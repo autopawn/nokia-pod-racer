@@ -43,6 +43,8 @@ extern Sound fxCoin;
 extern int lastGameTime;
 extern bool lastGameComplete;
 extern bool isMusicOn;
+extern bool triggerAxisDetected;
+extern int triggerLeftAxis, triggerRightAxis;
 
 #ifdef __cplusplus
 extern "C" {            // Prevents name mangling of functions
