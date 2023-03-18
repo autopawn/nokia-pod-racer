@@ -613,17 +613,13 @@ void DrawGameplayScreen(void)
             float carrot_distance = CarrotDistance(level, &player);
 
             // Get carrot position in the screen
-            Vector2 carrot_v = GetWorldToScreen(Vector3Add(level->carrot_pos, (Vector3){0, 0.1 + 2*CARROT_RAD, 0}), camera);
+            Vector2 carrot_v = GetWorldToScreenEx(Vector3Add(level->carrot_pos, (Vector3){0, 0.1 + 2*CARROT_RAD, 0}), camera, SCREEN_W, SCREEN_H);
             // Transform into render texture position
-            carrot_v.x -= SCREEN_BORDER;
-            carrot_v.y -= SCREEN_BORDER;
-            carrot_v.x /= SCREEN_SCALE_MULT;
-            carrot_v.y /= SCREEN_SCALE_MULT;
             bool carrot_in_view = -0.3*PI < carrot_angle && carrot_angle < 0.3*PI;
 
             if (carrot_in_view && carrot_distance <= CARROT_IN_VIEW_DISTANCE)
             {
-                DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/2)%2, 0, carrot_v.x - 4, carrot_v.y - 4);
+                DrawTile(textureDriver, 12, 12, 6 + (level->time_playing/2)%2, 0, carrot_v.x - 4, carrot_v.y - 7);
             }
             else
             {
