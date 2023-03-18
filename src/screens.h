@@ -1,7 +1,6 @@
 #ifndef SCREENS_H
 #define SCREENS_H
 
-
 //----------------------------------------------------------------------------------
 // Nokia screen details
 //----------------------------------------------------------------------------------
@@ -120,6 +119,21 @@ static inline float absf(float a)
 static inline float maxf(float a, float b)
 {
     return a > b ? a : b;
+}
+
+static inline bool IsAnyKeyPressed()
+{
+    int key;
+
+    key = GetKeyPressed();
+    if (key && key != KEY_O && key != KEY_P)
+        return true;
+
+    key = GetGamepadButtonPressed();
+    if (key && key != GAMEPAD_BUTTON_LEFT_TRIGGER_1 && key != GAMEPAD_BUTTON_RIGHT_TRIGGER_1)
+        return true;
+
+    return false;
 }
 
 #ifdef __cplusplus

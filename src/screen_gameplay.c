@@ -42,7 +42,7 @@ static const int UI_FONT_SIZE = 8;
 static const int CARROT_SPAN_DIST = 200;
 static const int TARGET_N_CARROTS = 5;
 
-const float PLAYER_RAD = 0.3;
+const float PLAYER_RAD = 0.26;
 const float CARROT_RAD = 0.24;
 
 const float CARROT_IN_VIEW_DISTANCE = 30;
@@ -68,7 +68,7 @@ typedef struct
 
     Vector3 pos, pos_spd;
 
-    int turbo_l, turbo_r;
+    float turbo_l, turbo_r;
 
     int time_death;
 } Player;
@@ -255,6 +255,18 @@ static void UpdatePlayer(Level *level, Player *player)
             player->turbo_r = 1;
         else
             player->turbo_r = 0;
+
+
+        if (IsGamepadAvailable(0))
+        {
+            float turbo_l = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_TRIGGER) + 1.0f;
+            float turbo_r = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) + 1.0f;
+
+            if (player->turbo_l < turbo_l)
+                player->turbo_l = turbo_l;
+            if (player->turbo_r < turbo_r)
+                player->turbo_r = turbo_r;
+        }
 
         // Target velocity
         float tgt_ang_spd = (player->turbo_r - player->turbo_l) * 0.04;
@@ -596,8 +608,8 @@ void DrawGameplayScreen(void)
     if (!player.time_death)
     {
         // Draw player
-        DrawTile(textureDriver, 12, 12, 3, player.turbo_l, 36 - 10, 34);
-        DrawTile(textureDriver, 12, 12, 4, player.turbo_r, 36 + 10, 34);
+        DrawTile(textureDriver, 12, 12, 3, (int) roundf(player.turbo_l), 36 - 10, 34);
+        DrawTile(textureDriver, 12, 12, 4, (int) roundf(player.turbo_r), 36 + 10, 34);
         if (level->carrot_grab_anim)
         {
             DrawTile(textureDriver, 12, 12, 0, 3, 36, 34);
@@ -605,7 +617,7 @@ void DrawGameplayScreen(void)
         }
         else
         {
-            DrawTile(textureDriver, 12, 12, player.turbo_l, player.turbo_r, 36, 34);
+            DrawTile(textureDriver, 12, 12, (int) roundf(player.turbo_l), (int) roundf(player.turbo_r), 36, 34);
         }
 
         if (level->n_carrots < TARGET_N_CARROTS)

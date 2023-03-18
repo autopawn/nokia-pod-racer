@@ -31,6 +31,12 @@ void UpdateHaremonicScreen(void)
 {
     framesCounter++;
 
+    if (IsAnyKeyPressed())
+    {
+        finishScreen = 1;
+        PlaySound(fxCoin);
+    }
+
     if (framesCounter >= DURATION)
         finishScreen = true;
     if (framesCounter == TADA_START)
@@ -48,9 +54,8 @@ void DrawHaremonicScreen(void)
     DrawLine(move_x + 0, 0, move_x + 0 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
     DrawLine(move_x + 1, 0, move_x + 1 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
     DrawLine(move_x + 2, 0, move_x + 2 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
-    DrawLine(move_x + 3, 0, move_x + 3 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
-    DrawLine(move_x + 6, 0, move_x + 6 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
-    DrawLine(move_x + 7, 0, move_x + 7 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
+    DrawLine(move_x + 5, 0, move_x + 6 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
+    DrawLine(move_x + 6, 0, move_x + 7 - SCREEN_H, SCREEN_H, SCREEN_COLOR_BG);
 }
 
 // Haremonic Screen Unload logic

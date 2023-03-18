@@ -70,6 +70,12 @@ void InitLogoScreen(void)
 // Logo Screen Update logic
 void UpdateLogoScreen(void)
 {
+    if (IsAnyKeyPressed())
+    {
+        finishScreen = 1;
+        PlaySound(fxCoin);
+    }
+
     if (state == 0)                 // State 0: Top-left square corner blink logic
     {
         framesCounter++;

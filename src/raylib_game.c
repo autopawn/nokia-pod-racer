@@ -36,7 +36,7 @@ bool isMusicOn = true;
 // Local Variables Definition (local to this module)
 //----------------------------------------------------------------------------------
 static RenderTexture2D nokiaScreen;
-static bool pixelSeparation = true;
+static bool pixelSeparation = false;
 static const int screenWidth = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_W;
 static const int screenHeight = 2*SCREEN_BORDER + SCREEN_SCALE_MULT*SCREEN_H;
 
@@ -108,7 +108,7 @@ int main(void)
 
     nokiaScreen = LoadRenderTexture(SCREEN_W, SCREEN_H);
 
-    SetMusicVolume(music, 1.0f);
+    SetMusicVolume(music, isMusicOn);
 
     // Setup and init first screen
     currentScreen = LOGO;
@@ -282,10 +282,10 @@ static void UpdateDrawFrame(void)
     if (!onTransition)
     {
         // Toggle pixel separation
-        if (IsKeyPressed(KEY_P))
+        if (IsKeyPressed(KEY_P) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1))
             pixelSeparation = !pixelSeparation;
         // Toggle music
-        if (IsKeyPressed(KEY_O))
+        if (IsKeyPressed(KEY_O) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_TRIGGER_1))
         {
             PlaySound(fxCoin);
             isMusicOn = !isMusicOn;
@@ -392,7 +392,7 @@ static void UpdateDrawFrame(void)
 
         if (pixelSeparation)
         {
-            Color line_color = ColorAlpha(SCREEN_COLOR_BG, 0.3);
+            Color line_color = ColorAlpha(SCREEN_COLOR_BG, 0.2);
 
             for (int y = 0; y <= SCREEN_H; ++y)
                 DrawLine(SCREEN_BORDER, SCREEN_BORDER + y*SCREEN_SCALE_MULT,

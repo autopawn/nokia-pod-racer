@@ -60,7 +60,7 @@ void UpdateTitleScreen(void)
 {
     framesCounter++;
 
-    if (GetKeyPressed())
+    if (IsAnyKeyPressed())
     {
         finishScreen = 1;
         PlaySound(fxCoin);
