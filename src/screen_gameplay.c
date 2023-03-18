@@ -391,6 +391,8 @@ void DrawSnow(Camera3D camera, int framesCounter)
 float CarrotAngle(const Level *level, const Player *player)
 {
     float angle = atan2f(- (level->carrot_pos.z - player->pos.z), level->carrot_pos.x - player->pos.x);
+    if (angle < 0)
+        angle += 2*PI;
 
     float delta = angle - player->ang;
 
