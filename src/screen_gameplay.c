@@ -112,6 +112,12 @@ typedef struct
 // Gameplay Screen Functions Definition
 //----------------------------------------------------------------------------------
 
+static float fremf(float a, float b)
+{
+    float r = fmodf(a, b);
+    return r < 0 ? r + b : r;
+}
+
 static bool LevelCheckCollision(const Level *level, Vector3 point, float rad)
 {
     for (int i = 0; i < level->objs_count; ++i)
@@ -320,7 +326,7 @@ static void UpdatePlayer(Level *level, Player *player)
 
     // Move according to speed
     player->ang += player->ang_spd;
-    player->ang = fmodf(player->ang, 2*PI);
+    player->ang = fremf(player->ang, 2*PI);
     player->pos = Vector3Add(player->pos, player->pos_spd);
 }
 
